@@ -1,4 +1,11 @@
-import { Event, getEventHash, signEvent, UnsignedEvent, validateEvent, verifySignature } from 'nostr-tools';
+import {
+	Event,
+	getEventHash,
+	signEvent,
+	UnsignedEvent,
+	validateEvent,
+	verifySignature,
+} from 'nostr-tools';
 
 /**
  * get basic kind1 event.
@@ -8,17 +15,17 @@ import { Event, getEventHash, signEvent, UnsignedEvent, validateEvent, verifySig
  * @returns kind1 Event
  */
 export function getSignedEvent(unsignedEvent: UnsignedEvent, sk: string): Event {
-  (unsignedEvent as Event)['id'] = getEventHash(unsignedEvent);
-  (unsignedEvent as Event)['sig'] = signEvent(unsignedEvent, sk);
+	(unsignedEvent as Event)['id'] = getEventHash(unsignedEvent);
+	(unsignedEvent as Event)['sig'] = signEvent(unsignedEvent, sk);
 
-  const event = unsignedEvent as Event;
+	const event = unsignedEvent as Event;
 
-  let ok = validateEvent(event);
-  let veryOk = verifySignature(event);
+	let ok = validateEvent(event);
+	let veryOk = verifySignature(event);
 
-	if(!ok || !veryOk) {
+	if (!ok || !veryOk) {
 		throw new Error('Cant create note event! not ok or not very ok.');
 	}
 
-  return event;
+	return event;
 }
