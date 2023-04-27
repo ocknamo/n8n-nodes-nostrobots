@@ -1,6 +1,6 @@
 import { Event, relayInit } from 'nostr-tools';
 
-type PostResult = 'accepted' | 'failed';
+type PostResult = string;
 
 export async function oneTimePostToMultiRelay(event: Event, relayUris: string[]): Promise<PostResult[]> {
 	const promises: Promise<PostResult>[] = [];
@@ -22,16 +22,16 @@ export async function oneTimePost(event: Event, relayUri: string): Promise<PostR
 
   await relay.connect()
 
-	let result: PostResult = 'failed';
+	let result: PostResult = `[init]: ${relay.url}`;
 
   let pub = relay.publish(event);
   pub.on('ok', () => {
     console.log(`${relay.url} has accepted our event`)
-		result = 'accepted';
+		result = `[accepted]: ${relay.url}`;
   });
   pub.on('failed', (reason: any) => {
-    console.log(`failed to publish to ${relay.url}: ${reason}`)
-		result = 'failed';
+    console.warn(`failed to publish to ${relay.url}: ${reason}`)
+		result = `[failed]: ${relay.url}`;
   });
 
   await relay.list([{kinds: [1]}]);

@@ -21,8 +21,17 @@ yarn lint
 
 ## TODO
 
-- custom relay
-- format output(relay name and result).
-- update operation name(eg. basic note).
-- advanced Event operation(full custom).
+- Add logo.
+- wait a response until accepted?
 - publish
+
+
+## DONE
+
+- DONE: custom relay
+	- 'wss://hoge,wss://fuga,ws://hoga'
+	- and default?
+- format output(relay name and result).
+	- [SUCCESS]: wss://
+	- [FAIL]: wss://
+- update operation name(eg. basic note).

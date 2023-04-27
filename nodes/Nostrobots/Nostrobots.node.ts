@@ -1,11 +1,12 @@
 import { IExecuteFunctions } from 'n8n-core';
 import {
+	assert,
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { getPublicKey } from 'nostr-tools';
+import { getPublicKey, UnsignedEvent } from 'nostr-tools';
 import { defaultRelays } from '../../src/constants/rerays';
 import { getSignedEvent } from '../../src/event';
 import { oneTimePostToMultiRelay } from '../../src/post';
@@ -42,11 +43,15 @@ export class Nostrobots implements INodeType {
 				type: 'options',
 				options: [
 					{
-						name: 'Event',
+						name: 'BasicNote',
+						value: 'kind1',
+					},
+					{
+						name: 'Event(advanced)',
 						value: 'event',
 					},
 				],
-				default: 'event',
+				default: 'kind1',
 				noDataExpression: true,
 				required: true,
 				description: 'Create a new note',
@@ -57,7 +62,7 @@ export class Nostrobots implements INodeType {
 				type: 'options',
 				displayOptions: {
 					show: {
-						resource: ['event'],
+						resource: ['event', 'kind1'],
 					},
 				},
 				options: [
@@ -71,10 +76,27 @@ export class Nostrobots implements INodeType {
 				default: 'send',
 				noDataExpression: true,
 			},
+			// common option
 			{
-				displayName: 'Note',
-				name: 'note',
+				displayName: 'Content',
+				name: 'content',
 				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						operation: ['send'],
+						resource: ['kind1', 'event'],
+					},
+				},
+				default: '',
+				placeholder: 'your note.',
+				description: 'Note here',
+			},
+			// event options
+			{
+				displayName: 'Kind',
+				name: 'kind',
+				type: 'number',
 				required: true,
 				displayOptions: {
 					show: {
@@ -82,9 +104,46 @@ export class Nostrobots implements INodeType {
 						resource: ['event'],
 					},
 				},
-				default: '',
-				placeholder: 'your note.',
-				description: 'Note here',
+				default: 1,
+				placeholder: 'kind number',
+				description: 'Event Kinds https://github.com/nostr-protocol/nips#event-kinds',
+			},
+			{
+				displayName: 'Tags',
+				name: 'tags',
+				type: 'json',
+				required: true,
+				displayOptions: {
+					show: {
+						operation: ['send'],
+						resource: ['event'],
+					},
+				},
+				/**
+				 * Mention Sample
+				 * [["e","dad5a4164747e4d88a45635c27a8b4ef632ebdb78dcd6ef3d12202edcabe1592","","root"],
+				 * ["e","dad5a4164747e4d88a45635c27a8b4ef632ebdb78dcd6ef3d12202edcabe1592","","reply"],
+				 * ["p","26bb2ebed6c552d670c804b0d655267b3c662b21e026d6e48ac93a6070530958"],
+				 * ["p","26bb2ebed6c552d670c804b0d655267b3c662b21e026d6e48ac93a6070530958"]]
+				 */
+				default: '[]',
+				placeholder: 'tags json string',
+				description: 'Tags https://github.com/nostr-protocol/nips#standardized-tags',
+			},
+			// relays
+			{
+				displayName: 'Custom Relay',
+				name: 'relay',
+				type: 'string',
+				displayOptions: {
+					show: {
+						operation: ['send'],
+						resource: ['event', 'kind1'],
+					},
+				},
+				default: defaultRelays.join(','),
+				placeholder: 'wss://relay.damus.io,wss://nostr.wine',
+				description: 'Relay address joined with ","',
 			},
 		],
 	};
@@ -107,45 +166,70 @@ export class Nostrobots implements INodeType {
 		let sk = '';
 		let pk = '';
 		if (secKey.startsWith('nsec')) {
-			// Convert to hex and
+			// Convert to hex
 			// emit 'Ox' and convert lower case.
 			sk = bech32('nsec').toHex(secKey).slice(2).toLowerCase();
-			pk = getPublicKey(sk);
 		} else {
 			sk = secKey;
-			pk = getPublicKey(sk);
 		}
+		pk = getPublicKey(sk);
 
 		// For each item, make an API call to create a contact
 		for (let i = 0; i < items.length; i++) {
-			if (resource === 'event') {
-				if (operation === 'send') {
-					console.log('Start send.');
+			/**
+			 * Prepare event.
+			 */
+			const event: Partial<UnsignedEvent> = {};
+			if (resource === 'kind1') {
+				event.kind = 1;
+				event.tags = [];
+			} else if (resource === 'event') {
+				event.kind = this.getNodeParameter('kind', i) as number;
+				const rawTags = this.getNodeParameter('tags', i) as string;
 
-					// Get note input
-					const note = this.getNodeParameter('note', i) as string;
-
-					// Make kind1(note) Event.
-					const noteEvent = getSignedEvent(
-						{
-							kind: 1,
-							created_at: Math.floor(Date.now() / 1000),
-							tags: [],
-							content: note,
-							pubkey: pk,
-						},
-						sk,
+				let tags: [][];
+				// json parse
+				try {
+					tags = JSON.parse(rawTags);
+					assert(Array.isArray(tags), 'Tags should be Array');
+				} catch (error) {
+					throw new NodeOperationError(
+						this.getNode(),
+						'Invalid tags was provided! Tags should be valid array',
 					);
-
-					console.log(noteEvent);
-
-					// Post event to relay.
-					// TODO: Customize relay lists.
-					const result = await oneTimePostToMultiRelay(noteEvent, defaultRelays);
-
-					// Return result.
-					returnData.push({ result });
 				}
+
+				event.tags = tags;
+			} else {
+				throw new NodeOperationError(this.getNode(), 'Invalid resource was provided!');
+			}
+			// Get content input
+			const content = this.getNodeParameter('content', i) as string;
+
+			const unsignedEvent = {
+				kind: event.kind,
+				created_at: Math.floor(Date.now() / 1000),
+				tags: event.tags,
+				content: content,
+				pubkey: pk,
+			};
+
+			/**
+			 * Execute Operation.
+			 */
+			if (operation === 'send') {
+				// Get relay input
+				const relays = this.getNodeParameter('relay', i) as string;
+				const relayArray = relays.split(',');
+
+				// Make kind1 Event.
+				const signedEvent = getSignedEvent(unsignedEvent, sk);
+
+				// Post event to relay.
+				const result = await oneTimePostToMultiRelay(signedEvent, relayArray);
+
+				// Return result.
+				returnData.push({ event: signedEvent, sendResults: result });
 			}
 		}
 		// Map data to n8n data structure

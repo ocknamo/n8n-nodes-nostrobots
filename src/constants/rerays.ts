@@ -1,4 +1,5 @@
-export const defaultRelays = [
+// TODO: update
+export const defaultRelays: string[] = [
 	'wss://relay.damus.io',
 	'wss://nostr.wine',
 	'wss://relay-jp.nostr.wirednet.jp',
