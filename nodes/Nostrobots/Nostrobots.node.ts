@@ -15,6 +15,9 @@ import { oneTimePostToMultiRelay } from '../../src/post';
 require('websocket-polyfill');
 const bech32 = require('bech32-converting');
 
+// Timeout(millisecond).
+const EVENT_POST_TIMEOUT = 10000;
+
 export class Nostrobots implements INodeType {
 	description: INodeTypeDescription = {
 		// Basic node details will go here
@@ -226,7 +229,7 @@ export class Nostrobots implements INodeType {
 				const signedEvent = getSignedEvent(unsignedEvent, sk);
 
 				// Post event to relay.
-				const result = await oneTimePostToMultiRelay(signedEvent, relayArray);
+				const result = await oneTimePostToMultiRelay(signedEvent, relayArray, EVENT_POST_TIMEOUT);
 
 				// Return result.
 				returnData.push({ event: signedEvent, sendResults: result });

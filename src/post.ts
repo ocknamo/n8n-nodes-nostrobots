@@ -5,16 +5,21 @@ type PostResult = string;
 export async function oneTimePostToMultiRelay(
 	event: Event,
 	relayUris: string[],
+	timeoutMs = 10000,
 ): Promise<PostResult[]> {
 	const promises: Promise<PostResult>[] = [];
 	relayUris.forEach((uri) => {
-		promises.push(oneTimePost(event, uri));
+		promises.push(oneTimePost(event, uri, timeoutMs));
 	});
 
 	return Promise.all(promises);
 }
 
-export async function oneTimePost(event: Event, relayUri: string): Promise<PostResult> {
+export async function oneTimePost(
+	event: Event,
+	relayUri: string,
+	timeoutMs = 10000,
+): Promise<PostResult> {
 	const relay = relayInit(relayUri);
 	relay.on('connect', () => {
 		console.log(`connected to ${relay.url}`);
@@ -34,6 +39,7 @@ export async function oneTimePost(event: Event, relayUri: string): Promise<PostR
 	 * Publish event.
 	 */
 	let pub = relay.publish(event);
+	let timeout: NodeJS.Timeout | null = null;
 	const promise: Promise<string> = new Promise((resolve, reject) => {
 		pub.on('ok', () => {
 			console.log(`${relay.url} has accepted our event`);
@@ -43,12 +49,20 @@ export async function oneTimePost(event: Event, relayUri: string): Promise<PostR
 			console.warn(`failed to publish to ${relay.url}: ${reason}`);
 			reject(`[failed]: ${relay.url}`);
 		});
+
+		timeout = setTimeout(() => {
+			reject(`[timeout]: ${relay.url}`);
+		}, timeoutMs);
 	});
 
 	/**
 	 * Get result.
 	 */
 	await promise.then((r) => (result = r)).catch((r) => (result = r));
+
+	if (!!timeout) {
+		clearTimeout(timeout);
+	}
 
 	relay.close();
 
