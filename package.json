@@ -15,6 +15,10 @@
     "type": "git",
     "url": "https://github.com/ocknamo/n8n-nodes-nostrobots.git"
   },
+  "engines": {
+    "node": "<=18.15.0",
+    "yarn": "<=1.22.5"
+  },
   "main": "index.js",
   "scripts": {
     "build": "tsc && gulp build:icons",
