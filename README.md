@@ -21,17 +21,4 @@ yarn lint
 
 ## TODO
 
-- Add logo.
-- wait a response until accepted?
-- publish
-
-
-## DONE
-
-- DONE: custom relay
-	- 'wss://hoge,wss://fuga,ws://hoga'
-	- and default?
-- format output(relay name and result).
-	- [SUCCESS]: wss://
-	- [FAIL]: wss://
-- update operation name(eg. basic note).
+- Trigger node by getting event from relay.
