@@ -1,15 +1,16 @@
-import { Event, relayInit } from 'nostr-tools';
+import { Event, Relay, relayInit } from 'nostr-tools';
 
-type PostResult = string;
+export type PostResult = { result: string; connection: Relay };
 
 export async function oneTimePostToMultiRelay(
 	event: Event,
 	relayUris: string[],
 	timeoutMs = 10000,
+	connections: Relay[] = [],
 ): Promise<PostResult[]> {
 	const promises: Promise<PostResult>[] = [];
-	relayUris.forEach((uri) => {
-		promises.push(oneTimePost(event, uri, timeoutMs));
+	relayUris.forEach((uri, i) => {
+		promises.push(oneTimePost(event, uri, timeoutMs, connections[i]));
 	});
 
 	return Promise.all(promises);
@@ -19,21 +20,27 @@ export async function oneTimePost(
 	event: Event,
 	relayUri: string,
 	timeoutMs = 10000,
+	connection?: Relay,
 ): Promise<PostResult> {
-	const relay = relayInit(relayUri);
-	relay.on('connect', () => {
-		console.log(`connected to ${relay.url}`);
-	});
-	relay.on('error', () => {
-		console.log(`failed to connect to ${relay.url}`);
-	});
+	let relay: Relay;
+	if (connection) {
+		relay = connection;
+	} else {
+		relay = relayInit(relayUri);
+		relay.on('connect', () => {
+			console.log(`connected to ${relay.url}`);
+		});
+		relay.on('error', () => {
+			console.log(`failed to connect to ${relay.url}`);
+		});
 
-	await relay.connect();
+		await relay.connect();
+	}
 
 	/**
 	 * Initial value.
 	 */
-	let result: PostResult = `[init]: ${relay.url}`;
+	let result: string = `[init]: ${relay.url}`;
 
 	/**
 	 * Publish event.
@@ -64,7 +71,5 @@ export async function oneTimePost(
 		clearTimeout(timeout);
 	}
 
-	relay.close();
-
-	return result;
+	return { result, connection: relay };
 }

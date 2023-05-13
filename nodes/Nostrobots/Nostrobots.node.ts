@@ -6,10 +6,10 @@ import {
 	INodeTypeDescription,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { getPublicKey, UnsignedEvent } from 'nostr-tools';
+import { getPublicKey, Relay, UnsignedEvent } from 'nostr-tools';
 import { defaultRelays } from '../../src/constants/rerays';
 import { getSignedEvent } from '../../src/event';
-import { oneTimePostToMultiRelay } from '../../src/post';
+import { oneTimePostToMultiRelay, PostResult } from '../../src/post';
 
 // polyfills
 require('websocket-polyfill');
@@ -177,6 +177,9 @@ export class Nostrobots implements INodeType {
 		}
 		pk = getPublicKey(sk);
 
+		// noster relay connections for reuse.
+		let connections: Relay[] | undefined = undefined;
+
 		// For each item, make an API call to create a contact
 		for (let i = 0; i < items.length; i++) {
 			/**
@@ -229,12 +232,26 @@ export class Nostrobots implements INodeType {
 				const signedEvent = getSignedEvent(unsignedEvent, sk);
 
 				// Post event to relay.
-				const result = await oneTimePostToMultiRelay(signedEvent, relayArray, EVENT_POST_TIMEOUT);
+				const postResult: PostResult[] = await oneTimePostToMultiRelay(
+					signedEvent,
+					relayArray,
+					EVENT_POST_TIMEOUT,
+					connections,
+				);
+				const results = postResult.map((v) => v.result);
+				connections = postResult.map((v) => v.connection);
 
 				// Return result.
-				returnData.push({ event: signedEvent, sendResults: result });
+				returnData.push({ event: signedEvent, sendResults: results });
 			}
 		}
+		// close all connection at finally.
+		if (connections) {
+			connections.forEach((c) => {
+				c.close();
+			});
+		}
+
 		// Map data to n8n data structure
 		return [this.helpers.returnJsonArray(returnData)];
 	}
