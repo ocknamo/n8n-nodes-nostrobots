@@ -177,10 +177,9 @@ export class Nostrobots implements INodeType {
 		}
 		pk = getPublicKey(sk);
 
-		// noster relay connections for reuse.
+		// nostr relay connections for reuse.
 		let connections: Relay[] | undefined = undefined;
 
-		// For each item, make an API call to create a contact
 		for (let i = 0; i < items.length; i++) {
 			/**
 			 * Prepare event.
@@ -194,7 +193,6 @@ export class Nostrobots implements INodeType {
 				const rawTags = this.getNodeParameter('tags', i) as string;
 
 				let tags: [][];
-				// json parse
 				try {
 					tags = JSON.parse(rawTags);
 					assert(Array.isArray(tags), 'Tags should be Array');

@@ -38,7 +38,8 @@
       "dist/credentials/NostrobotsApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/Nostrobots/Nostrobots.node.js"
+      "dist/nodes/Nostrobots/Nostrobots.node.js",
+      "dist/nodes/NostrobotsRead/Nostrobotsread.node.js"
     ]
   },
   "devDependencies": {
