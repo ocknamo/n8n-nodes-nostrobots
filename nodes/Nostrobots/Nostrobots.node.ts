@@ -9,7 +9,7 @@ import {
 import { getPublicKey, Relay, UnsignedEvent } from 'nostr-tools';
 import { defaultRelays } from '../../src/constants/rerays';
 import { getSignedEvent } from '../../src/event';
-import { oneTimePostToMultiRelay, PostResult } from '../../src/post';
+import { oneTimePostToMultiRelay, PostResult } from '../../src/write';
 
 // polyfills
 require('websocket-polyfill');
