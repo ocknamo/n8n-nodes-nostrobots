@@ -24,9 +24,12 @@
     "build": "tsc && gulp build:icons",
     "dev": "tsc --watch",
     "format": "prettier nodes credentials src --write",
+    "ci:format": "prettier nodes credentials src --check",
     "lint": "eslint nodes credentials package.json",
+    "ci:lint": "eslint nodes credentials package.json --max-warnings=0",
     "lintfix": "eslint nodes credentials package.json --fix",
-    "prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes credentials package.json"
+    "prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes credentials package.json",
+    "test": "jest"
   },
   "files": [
     "dist"
@@ -56,5 +59,5 @@
     "bech32-converting": "^1.0.9",
     "nostr-tools": "~1.10.0",
     "websocket-polyfill": "^0.0.3"
-  }
+  },
 }
