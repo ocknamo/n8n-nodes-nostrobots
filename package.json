@@ -54,7 +54,7 @@
   },
   "dependencies": {
     "bech32-converting": "^1.0.9",
-    "nostr-tools": "^1.9.0",
+    "nostr-tools": "~1.10.0",
     "websocket-polyfill": "^0.0.3"
   }
 }
