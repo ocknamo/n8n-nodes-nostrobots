@@ -6,7 +6,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { defaultRelays } from '../../src/constants/rerays';
-import { getHexPubKey } from '../../src/convert/get-hex-pubkey';
+import { getHexEventId, getHexPubKey } from '../../src/convert/get-hex';
 import { getUnixtimeFromDateString } from '../../src/convert/time';
 import { fetchEvents } from '../../src/read';
 import { Event, Filter } from 'nostr-tools';
@@ -39,6 +39,10 @@ export class Nostrobotsread implements INodeType {
 						name: 'UserPublickey',
 						value: 'pubkey',
 					},
+					{
+						name: 'EventId',
+						value: 'eventid',
+					},
 					// TODO
 					// {
 					// 	name: 'KeyWord',
@@ -66,7 +70,22 @@ export class Nostrobotsread implements INodeType {
 				},
 				default: '',
 				placeholder: 'npub...',
-				description: 'Note here',
+				description: 'Target users publickey',
+			},
+			{
+				displayName: 'EventId',
+				name: 'eventid',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						strategy: ['eventid'],
+					},
+				},
+				default: '',
+				placeholder: 'nevent...',
+				description:
+					'Target event ID. If there is a relay in the event ID metadata, the request is also sent to that relay.',
 			},
 			// common option
 			{
@@ -75,6 +94,11 @@ export class Nostrobotsread implements INodeType {
 				type: 'dateTime',
 				default: '',
 				required: true,
+				displayOptions: {
+					hide: {
+						strategy: ['eventid'],
+					},
+				},
 			},
 			{
 				displayName: 'Until',
@@ -82,6 +106,11 @@ export class Nostrobotsread implements INodeType {
 				type: 'dateTime',
 				default: '',
 				required: true,
+				displayOptions: {
+					hide: {
+						strategy: ['eventid'],
+					},
+				},
 			},
 			// relays
 			{
@@ -104,21 +133,29 @@ export class Nostrobotsread implements INodeType {
 		let events: Event[] = [];
 
 		for (let i = 0; i < items.length; i++) {
-			const pubkey = getHexPubKey(this.getNodeParameter('pubkey', i) as string);
-			const since = this.getNodeParameter('since', i) as string; // ug. 2023-04-30T15:00:00.000Z
-			const until = this.getNodeParameter('until', i) as string; // ug. 2023-04-30T15:00:00.000Z
-
 			// Get relay input
 			const relays = this.getNodeParameter('relay', i) as string;
-			const relayArray = relays.split(',');
+			let relayArray = relays.split(',');
 
 			let filter: Filter = {};
 			if (strategy === 'pubkey') {
+				const pubkey = getHexPubKey(this.getNodeParameter('pubkey', i) as string);
+				const since = this.getNodeParameter('since', i) as string; // ug. 2023-04-30T15:00:00.000Z
+				const until = this.getNodeParameter('until', i) as string; // ug. 2023-04-30T15:00:00.000Z
 				filter = {
 					kinds: [1],
 					authors: [pubkey],
 					since: getUnixtimeFromDateString(since),
 					until: getUnixtimeFromDateString(until),
+				};
+			} else if (strategy === 'eventid') {
+				const si = getHexEventId(this.getNodeParameter('eventid', i) as string);
+				const metaRelay = si.relay;
+				relayArray = [...relayArray, ...metaRelay];
+
+				filter = {
+					ids: [si.special],
+					limit: 1,
 				};
 			} else {
 				throw new NodeOperationError(this.getNode(), 'Invalid strategy was provided!');
