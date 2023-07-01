@@ -29,7 +29,8 @@
     "ci:lint": "eslint nodes credentials package.json --max-warnings=0",
     "lintfix": "eslint nodes credentials package.json --fix",
     "prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes credentials package.json",
-    "test": "jest"
+    "test": "jest",
+    "ci:test": "yarn test"
   },
   "files": [
     "dist"
