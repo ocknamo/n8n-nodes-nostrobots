@@ -4,6 +4,8 @@ node_modules
 tmp
 dist
 npm-debug.log*
-yarn.lock
+.vscode
 .vscode/launch.json
 coverage
+yarn.lock
+yarn-error.log

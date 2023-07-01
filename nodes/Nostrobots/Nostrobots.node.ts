@@ -6,9 +6,8 @@ import {
 	INodeTypeDescription,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { getPublicKey, Relay, UnsignedEvent } from 'nostr-tools';
+import { finishEvent, Relay, UnsignedEvent } from 'nostr-tools';
 import { defaultRelays } from '../../src/constants/rerays';
-import { getSignedEvent } from '../../src/event';
 import { oneTimePostToMultiRelay, PostResult } from '../../src/write';
 
 // polyfills
@@ -167,7 +166,6 @@ export class Nostrobots implements INodeType {
 		 * Get secret key and public key.
 		 */
 		let sk = '';
-		let pk = '';
 		if (secKey.startsWith('nsec')) {
 			// Convert to hex
 			// emit 'Ox' and convert lower case.
@@ -175,7 +173,6 @@ export class Nostrobots implements INodeType {
 		} else {
 			sk = secKey;
 		}
-		pk = getPublicKey(sk);
 
 		// nostr relay connections for reuse.
 		let connections: Relay[] | undefined = undefined;
@@ -215,7 +212,6 @@ export class Nostrobots implements INodeType {
 				created_at: Math.floor(Date.now() / 1000),
 				tags: event.tags,
 				content: content,
-				pubkey: pk,
 			};
 
 			/**
@@ -226,8 +222,8 @@ export class Nostrobots implements INodeType {
 				const relays = this.getNodeParameter('relay', i) as string;
 				const relayArray = relays.split(',');
 
-				// Make kind1 Event.
-				const signedEvent = getSignedEvent(unsignedEvent, sk);
+				// Sign kind1 Event.
+				const signedEvent = finishEvent(unsignedEvent, sk);
 
 				// Post event to relay.
 				const postResult: PostResult[] = await oneTimePostToMultiRelay(
