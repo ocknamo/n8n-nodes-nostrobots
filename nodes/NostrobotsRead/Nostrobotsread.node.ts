@@ -17,14 +17,14 @@ require('websocket-polyfill');
 export class Nostrobotsread implements INodeType {
 	description: INodeTypeDescription = {
 		// Basic node details will go here
-		displayName: 'Nostrobotsread',
+		displayName: 'Nostr Read',
 		name: 'nostrobotsread',
 		icon: 'file:nostrobotsread.svg',
 		group: ['transform'],
 		version: 1,
 		description: 'Read from Nostr relay',
 		defaults: {
-			name: 'NostrobotsRead',
+			name: 'Nostr Read',
 		},
 		inputs: ['main'],
 		outputs: ['main'],
