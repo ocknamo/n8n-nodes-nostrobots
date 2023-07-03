@@ -21,6 +21,14 @@ export function getHexPubKey(src: string): string {
 export function getHexEventId(src: string): ShareableIdentifier {
 	const prefix = 'nevent';
 
+	// Is src raw hex id?
+	if (!src.startsWith(prefix) && src.length === 64) {
+		return {
+			special: src,
+			relay: [],
+		};
+	}
+
 	return getShareableIdentifier(getHex(src, prefix));
 }
 

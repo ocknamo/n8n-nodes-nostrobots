@@ -83,7 +83,7 @@ export class Nostrobotsread implements INodeType {
 					},
 				},
 				default: '',
-				placeholder: 'nevent...',
+				placeholder: 'nevent... or raw hex ID',
 				description:
 					'Target event ID. If there is a relay in the event ID metadata, the request is also sent to that relay.',
 			},
