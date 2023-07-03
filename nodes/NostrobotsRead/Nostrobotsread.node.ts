@@ -121,6 +121,14 @@ export class Nostrobotsread implements INodeType {
 				placeholder: 'wss://relay.damus.io,wss://nostr.wine',
 				description: 'Relay address joined with ","',
 			},
+			{
+				displayName: 'Error With Empty Result',
+				name: 'errorWithEmptyResult',
+				type: 'boolean',
+				default: false,
+				description: 'Whether throw error or not with empty events result',
+				noDataExpression: true,
+			},
 		],
 	};
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
@@ -129,6 +137,7 @@ export class Nostrobotsread implements INodeType {
 		 */
 		const items = this.getInputData();
 		const strategy = this.getNodeParameter('strategy', 0) as string;
+		const errorWithEmptyResult = this.getNodeParameter('errorWithEmptyResult', 0) as string;
 
 		let events: Event[] = [];
 
@@ -167,6 +176,13 @@ export class Nostrobotsread implements INodeType {
 			const results = await fetchEvents(filter, relayArray);
 
 			events = [...events, ...results];
+		}
+
+		/**
+		 * Empty guard
+		 */
+		if (errorWithEmptyResult && events.length <= 0) {
+			throw new NodeOperationError(this.getNode(), 'Result is empty!');
 		}
 
 		/**
