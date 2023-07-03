@@ -44,6 +44,12 @@ TBD
 
 Please read [Run your node locally](https://docs.n8n.io/integrations/creating-nodes/test/run-node-locally/#run-your-node-locally).
 
+### Unit test
+
+``` sh
+yarn test
+```
+
 ## lint
 
 ``` sh

@@ -8,11 +8,11 @@ import {
 } from 'n8n-workflow';
 import { finishEvent, Relay, UnsignedEvent } from 'nostr-tools';
 import { defaultRelays } from '../../src/constants/rerays';
-import { oneTimePostToMultiRelay, PostResult } from '../../src/post';
+import { getHex } from '../../src/convert/get-hex';
+import { oneTimePostToMultiRelay, PostResult } from '../../src/write';
 
 // polyfills
 require('websocket-polyfill');
-const bech32 = require('bech32-converting');
 
 // Timeout(millisecond).
 const EVENT_POST_TIMEOUT = 10000;
@@ -20,14 +20,14 @@ const EVENT_POST_TIMEOUT = 10000;
 export class Nostrobots implements INodeType {
 	description: INodeTypeDescription = {
 		// Basic node details will go here
-		displayName: 'Nostrobots',
+		displayName: 'Nostr Write',
 		name: 'nostrobots',
 		icon: 'file:nostrobots.svg',
 		group: ['transform'],
 		version: 1,
 		description: 'Consume Nostr API',
 		defaults: {
-			name: 'Nostrobots',
+			name: 'Nostr Write',
 		},
 		inputs: ['main'],
 		outputs: ['main'],
@@ -169,15 +169,14 @@ export class Nostrobots implements INodeType {
 		if (secKey.startsWith('nsec')) {
 			// Convert to hex
 			// emit 'Ox' and convert lower case.
-			sk = bech32('nsec').toHex(secKey).slice(2).toLowerCase();
+			sk = getHex(secKey, 'nsec');
 		} else {
 			sk = secKey;
 		}
 
-		// noster relay connections for reuse.
+		// nostr relay connections for reuse.
 		let connections: Relay[] | undefined = undefined;
 
-		// For each item, make an API call to create a contact
 		for (let i = 0; i < items.length; i++) {
 			/**
 			 * Prepare event.
@@ -191,7 +190,6 @@ export class Nostrobots implements INodeType {
 				const rawTags = this.getNodeParameter('tags', i) as string;
 
 				let tags: [][];
-				// json parse
 				try {
 					tags = JSON.parse(rawTags);
 					assert(Array.isArray(tags), 'Tags should be Array');
