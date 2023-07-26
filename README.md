@@ -59,6 +59,10 @@ yarn lint
 
 ## TODO
 
+- Send just raw Event.
+- Query events by tags.
+- Query events by words.
+- Query events by mention.
 - Trigger node by getting event from relay.
 
 
