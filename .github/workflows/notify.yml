@@ -1,0 +1,22 @@
+name: Notify
+
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  notify:
+    if: ${{ github.event.pull_request.merged == true }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: snow-actions/nostr@v1.6.0
+        with:
+          relays: ${{ vars.NOSTR_RELAYS }}
+          private-key: ${{ secrets.NOSTR_PRIVATE_KEY }}
+          content: |
+            #n8n-nodes-nostrobots ${{ github.event.pull_request.title }}
+            ${{ github.event.pull_request.html_url }}
+          tags: |
+            - ["t", "n8n-nodes-nostrobots"]
