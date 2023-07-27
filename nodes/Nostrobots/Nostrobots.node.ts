@@ -52,6 +52,10 @@ export class Nostrobots implements INodeType {
 						name: 'Event(advanced)',
 						value: 'event',
 					},
+					{
+						name: 'Raw Json Event(advanced)',
+						value: 'json',
+					},
 				],
 				default: 'kind1',
 				noDataExpression: true,
@@ -64,7 +68,7 @@ export class Nostrobots implements INodeType {
 				type: 'options',
 				displayOptions: {
 					show: {
-						resource: ['event', 'kind1'],
+						resource: ['event', 'kind1', 'json'],
 					},
 				},
 				options: [
@@ -203,6 +207,21 @@ export class Nostrobots implements INodeType {
 				placeholder: '123456789',
 				description: 'Unixtime',
 			},
+			// json
+			{
+				displayName: 'Json',
+				name: 'jsonEvent',
+				type: 'json',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['json'],
+					},
+				},
+				default: '',
+				placeholder: '{{ $json }}',
+				description: 'Raw JSON event',
+			},
 			// relays
 			{
 				displayName: 'Custom Relay',
@@ -211,7 +230,7 @@ export class Nostrobots implements INodeType {
 				displayOptions: {
 					show: {
 						operation: ['send'],
-						resource: ['event', 'kind1'],
+						resource: ['event', 'kind1', 'json'],
 					},
 				},
 				default: defaultRelays.join(','),
@@ -249,18 +268,19 @@ export class Nostrobots implements INodeType {
 		let connections: Relay[] | undefined = undefined;
 
 		for (let i = 0; i < items.length; i++) {
-			const otherOption = this.getNodeParameter('otherOption', i) as boolean;
-			// Get content input
-			const content = this.getNodeParameter('content', i) as string;
+			let otherOption = false;
 
 			/**
 			 * Prepare event.
 			 */
-			const event: any = { content, created_at: Math.floor(Date.now() / 1000) };
+			let event: any = { created_at: Math.floor(Date.now() / 1000) };
 			if (resource === 'kind1') {
+				event.content = this.getNodeParameter('content', i) as string;
 				event.kind = 1;
 				event.tags = [];
 			} else if (resource === 'event') {
+				otherOption = this.getNodeParameter('otherOption', i) as boolean;
+				event.content = this.getNodeParameter('content', i) as string;
 				event.kind = this.getNodeParameter('kind', i) as number;
 				const rawTags = this.getNodeParameter('tags', i) as string;
 				let tags: [][];
@@ -282,6 +302,8 @@ export class Nostrobots implements INodeType {
 					event.sig = this.getNodeParameter('sig', i) as string;
 					event.created_at = this.getNodeParameter('createdAt', i) as string;
 				}
+			} else if (resource === 'json') {
+				event = this.getNodeParameter('jsonEvent', i) as string;
 			} else {
 				throw new NodeOperationError(this.getNode(), 'Invalid resource was provided!');
 			}
@@ -295,7 +317,7 @@ export class Nostrobots implements INodeType {
 				const relayArray = relays.split(',');
 
 				// Sign kind1 Event.
-				const signedEvent = !otherOption ? finishEvent(event, sk) : event;
+				const signedEvent = !otherOption && resource !== 'json' ? finishEvent(event, sk) : event;
 
 				// Post event to relay.
 				const postResult: PostResult[] = await oneTimePostToMultiRelay(
