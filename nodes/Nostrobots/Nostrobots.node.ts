@@ -6,7 +6,7 @@ import {
 	INodeTypeDescription,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { finishEvent, Relay, UnsignedEvent } from 'nostr-tools';
+import { finishEvent, Relay } from 'nostr-tools';
 import { defaultRelays } from '../../src/constants/rerays';
 import { getHex } from '../../src/convert/get-hex';
 import { oneTimePostToMultiRelay, PostResult } from '../../src/write';
@@ -34,7 +34,7 @@ export class Nostrobots implements INodeType {
 		credentials: [
 			{
 				name: 'nostrobotsApi',
-				required: true,
+				required: false,
 			},
 		],
 		properties: [
@@ -132,6 +132,77 @@ export class Nostrobots implements INodeType {
 				placeholder: 'tags json string',
 				description: 'Tags https://github.com/nostr-protocol/nips#standardized-tags',
 			},
+			// other option
+			{
+				displayName: 'ShowOtherOption',
+				name: 'otherOption',
+				type: 'boolean',
+				description:
+					'Whether to set other options. If no other options are set, it will be calculated automatically.',
+				default: false,
+				displayOptions: {
+					show: {
+						operation: ['send'],
+						resource: ['event'],
+					},
+				},
+			},
+			{
+				displayName: 'EventId',
+				name: 'eventID',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						otherOption: [true],
+					},
+				},
+				default: '',
+				placeholder: 'event ID',
+				description: 'Hex event ID from raw event or calculate yourself',
+			},
+			{
+				displayName: 'Pubkey',
+				name: 'pubkey',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						otherOption: [true],
+					},
+				},
+				default: '',
+				placeholder: 'public key',
+				description: 'Hex public key',
+			},
+			{
+				displayName: 'Sig',
+				name: 'sig',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						otherOption: [true],
+					},
+				},
+				default: '',
+				placeholder: 'signature string',
+				description: 'Signature string of the event',
+			},
+			{
+				displayName: 'CreatedAt',
+				name: 'createdAt',
+				type: 'number',
+				required: true,
+				displayOptions: {
+					show: {
+						otherOption: [true],
+					},
+				},
+				default: null,
+				placeholder: '123456789',
+				description: 'Unixtime',
+			},
 			// relays
 			{
 				displayName: 'Custom Relay',
@@ -178,20 +249,24 @@ export class Nostrobots implements INodeType {
 		let connections: Relay[] | undefined = undefined;
 
 		for (let i = 0; i < items.length; i++) {
+			const otherOption = this.getNodeParameter('otherOption', i) as boolean;
+			// Get content input
+			const content = this.getNodeParameter('content', i) as string;
+
 			/**
 			 * Prepare event.
 			 */
-			const event: Partial<UnsignedEvent> = {};
+			const event: any = { content, created_at: Math.floor(Date.now() / 1000) };
 			if (resource === 'kind1') {
 				event.kind = 1;
 				event.tags = [];
 			} else if (resource === 'event') {
 				event.kind = this.getNodeParameter('kind', i) as number;
 				const rawTags = this.getNodeParameter('tags', i) as string;
-
 				let tags: [][];
+
 				try {
-					tags = JSON.parse(rawTags);
+					tags = Array.isArray(rawTags) ? rawTags : JSON.parse(rawTags);
 					assert(Array.isArray(tags), 'Tags should be Array');
 				} catch (error) {
 					throw new NodeOperationError(
@@ -201,18 +276,15 @@ export class Nostrobots implements INodeType {
 				}
 
 				event.tags = tags;
+				if (otherOption) {
+					event.id = this.getNodeParameter('eventID', i) as string;
+					event.pubkey = this.getNodeParameter('pubkey', i) as string;
+					event.sig = this.getNodeParameter('sig', i) as string;
+					event.created_at = this.getNodeParameter('createdAt', i) as string;
+				}
 			} else {
 				throw new NodeOperationError(this.getNode(), 'Invalid resource was provided!');
 			}
-			// Get content input
-			const content = this.getNodeParameter('content', i) as string;
-
-			const unsignedEvent = {
-				kind: event.kind,
-				created_at: Math.floor(Date.now() / 1000),
-				tags: event.tags,
-				content: content,
-			};
 
 			/**
 			 * Execute Operation.
@@ -223,7 +295,7 @@ export class Nostrobots implements INodeType {
 				const relayArray = relays.split(',');
 
 				// Sign kind1 Event.
-				const signedEvent = finishEvent(unsignedEvent, sk);
+				const signedEvent = !otherOption ? finishEvent(event, sk) : event;
 
 				// Post event to relay.
 				const postResult: PostResult[] = await oneTimePostToMultiRelay(

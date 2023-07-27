@@ -21,9 +21,12 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 
 ## Operations
 
-- Send
+- Nostr Write (Nostrobots)
   - Send kind1 note
   - Send event(full custom)
+- Nostr Read
+  - Fetch events
+    - Qyery by eventId, public key.
 
 ## Credentials
 
@@ -43,6 +46,16 @@ TBD
 ## Test in local
 
 Please read [Run your node locally](https://docs.n8n.io/integrations/creating-nodes/test/run-node-locally/#run-your-node-locally).
+
+``` sh
+# project root path
+yarn build
+yarn link
+
+# move to n8n node directory. eg. ~/.n8n/nodes
+yarn link n8n-nodes-nostrobots
+n8n start
+```
 
 ### Unit test
 
