@@ -7,7 +7,7 @@ import {
 } from 'n8n-workflow';
 import { defaultRelays } from '../../src/constants/rerays';
 import { getHexEventId, getHexPubKey } from '../../src/convert/get-hex';
-import { getUnixtimeFromDateString } from '../../src/convert/time';
+import { getSince, getUnixtimeFromDateString } from '../../src/convert/time';
 import { fetchEvents } from '../../src/read';
 import { Event, Filter } from 'nostr-tools';
 
@@ -89,6 +89,58 @@ export class Nostrobotsread implements INodeType {
 			},
 			// common option
 			{
+				displayName: 'Relative',
+				name: 'relative',
+				type: 'boolean',
+				default: true,
+				displayOptions: {
+					hide: {
+						strategy: ['eventid'],
+					},
+				},
+			},
+			{
+				displayName: 'From',
+				name: 'from',
+				type: 'number',
+				default: 1,
+				required: true,
+				description: 'How many days or hours or minutes ago to now',
+				displayOptions: {
+					hide: {
+						strategy: ['eventid'],
+						relative: [false],
+					},
+				},
+			},
+			{
+				displayName: 'Unit',
+				name: 'unit',
+				type: 'options',
+				default: 'day',
+				required: true,
+				displayOptions: {
+					hide: {
+						strategy: ['eventid'],
+						relative: [false],
+					},
+				},
+				options: [
+					{
+						name: 'Day',
+						value: 'day',
+					},
+					{
+						name: 'Hour',
+						value: 'hour',
+					},
+					{
+						name: 'Minute',
+						value: 'minute',
+					},
+				],
+			},
+			{
 				displayName: 'Since',
 				name: 'since',
 				type: 'dateTime',
@@ -97,6 +149,7 @@ export class Nostrobotsread implements INodeType {
 				displayOptions: {
 					hide: {
 						strategy: ['eventid'],
+						relative: [true],
 					},
 				},
 			},
@@ -109,6 +162,7 @@ export class Nostrobotsread implements INodeType {
 				displayOptions: {
 					hide: {
 						strategy: ['eventid'],
+						relative: [true],
 					},
 				},
 			},
@@ -149,13 +203,28 @@ export class Nostrobotsread implements INodeType {
 			let filter: Filter = {};
 			if (strategy === 'pubkey') {
 				const pubkey = getHexPubKey(this.getNodeParameter('pubkey', i) as string);
-				const since = this.getNodeParameter('since', i) as string; // ug. 2023-04-30T15:00:00.000Z
-				const until = this.getNodeParameter('until', i) as string; // ug. 2023-04-30T15:00:00.000Z
+
+				const relative = this.getNodeParameter('relative', i) as boolean;
+
+				let since: number;
+				let until: number;
+				if (relative) {
+					const from = this.getNodeParameter('from', i) as number; // ug.
+					const unit = this.getNodeParameter('unit', i) as 'day' | 'hour' | 'minute';
+
+					const futureBuffer = 10;
+					since = getSince(from, unit);
+					until = Math.floor(Date.now() / 1000) + futureBuffer;
+				} else {
+					since = getUnixtimeFromDateString(this.getNodeParameter('since', i) as string);
+					until = getUnixtimeFromDateString(this.getNodeParameter('until', i) as string);
+				}
+
 				filter = {
 					kinds: [1],
 					authors: [pubkey],
-					since: getUnixtimeFromDateString(since),
-					until: getUnixtimeFromDateString(until),
+					since,
+					until,
 				};
 			} else if (strategy === 'eventid') {
 				const si = getHexEventId(this.getNodeParameter('eventid', i) as string);

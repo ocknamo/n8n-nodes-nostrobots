@@ -5,3 +5,17 @@ export function getSecFromMsec(millisec: number): number {
 export function getUnixtimeFromDateString(dateString: string) {
 	return getSecFromMsec(new Date(dateString).getTime());
 }
+
+export function getSince(
+	from: number,
+	unit: 'day' | 'hour' | 'minute',
+	now = Math.floor(Date.now() / 1000),
+): number {
+	enum Unit {
+		day = 60 * 60 * 24,
+		hour = 60 * 60,
+		minute = 60,
+	}
+
+	return now - from * Unit[unit];
+}
