@@ -12,6 +12,7 @@ export class NostrobotsApi implements ICredentialType {
 			typeOptions: { password: true },
 			description: 'Nostr secret key',
 			default: '',
+			required: true,
 		},
 	];
 }
