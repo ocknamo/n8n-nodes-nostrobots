@@ -5,5 +5,7 @@ export const defaultRelays: string[] = [
 	'wss://nostr-relay.nokotaro.com',
 	'wss://nostr.fediverse.jp',
 	'wss://nostr.holybea.com',
-	'wss://nostr.h3z.jp',
+	'wss://nos.lol',
+	'wss://relay.snort.social',
+	'wss://nostr.mom',
 ];
