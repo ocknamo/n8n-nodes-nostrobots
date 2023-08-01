@@ -19,3 +19,9 @@ export function getSince(
 
 	return now - from * Unit[unit];
 }
+
+export function getUntilNow() {
+	const futureBuffer = 10;
+
+	return Math.floor(Date.now() / 1000) + futureBuffer;
+}

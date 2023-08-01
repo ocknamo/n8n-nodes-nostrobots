@@ -7,7 +7,7 @@ import {
 } from 'n8n-workflow';
 import { defaultRelays } from '../../src/constants/rerays';
 import { getHexEventId, getHexPubKey } from '../../src/convert/get-hex';
-import { getSince, getUnixtimeFromDateString } from '../../src/convert/time';
+import { getSince, getUnixtimeFromDateString, getUntilNow } from '../../src/convert/time';
 import { fetchEvents } from '../../src/read';
 import { Event, Filter } from 'nostr-tools';
 
@@ -212,9 +212,8 @@ export class Nostrobotsread implements INodeType {
 					const from = this.getNodeParameter('from', i) as number; // ug.
 					const unit = this.getNodeParameter('unit', i) as 'day' | 'hour' | 'minute';
 
-					const futureBuffer = 10;
 					since = getSince(from, unit);
-					until = Math.floor(Date.now() / 1000) + futureBuffer;
+					until = getUntilNow();
 				} else {
 					since = getUnixtimeFromDateString(this.getNodeParameter('since', i) as string);
 					until = getUnixtimeFromDateString(this.getNodeParameter('until', i) as string);
