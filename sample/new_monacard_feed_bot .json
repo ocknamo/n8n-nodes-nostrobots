@@ -1,0 +1,273 @@
+{
+  "name": "new monacard feed bot",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ !!!$json[\"error\"] }}",
+              "operation": "=equal",
+              "value2": "={{ true }}"
+            }
+          ]
+        }
+      },
+      "id": "e04355e5-423b-43b4-baf6-c435ea524f47",
+      "name": "IF エラーでない場合",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1580,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "triggerAtMinute": 14
+            }
+          ]
+        }
+      },
+      "id": "f6ebbe3b-961b-411a-992d-6da66d4a8c63",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "content": "=モナカードが新規発行されました！\n\n\n {{ $json.asset_common_name }}\n {{ $json.card_name }}\n\nhttps://card.mona.jp/explorer/card_detail?asset={{ $json.asset }}\n\n {{ $json.imgur_url }}l#image.png\n\n#monacard #monacoin #mona",
+        "tags": "=[[\"t\",\"monacard\"],[\"r\",\"{{ $json.cid }}\"],[\"t\",\"monacoin\"],[\"t\",\"mona\"]]",
+        "relay": "=wss://relay.damus.io,wss://relay-jp.nostr.wirednet.jp,wss://nostr-relay.nokotaro.com,wss://nostr.fediverse.jp,wss://nostr.holybea.com,wss://nos.lol,wss://relay.snort.social,wss://nostr.mom"
+      },
+      "id": "5228e1c3-544c-4cda-908d-27af9a63c6c4",
+      "name": "Nostr Write",
+      "type": "n8n-nodes-nostrobots.nostrobots",
+      "typeVersion": 1,
+      "position": [
+        2860,
+        620
+      ],
+      "credentials": {
+        "nostrobotsApi": {
+          "id": "eHZnGupXg1a3HkZf",
+          "name": "monacard bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "removeDuplicates",
+        "compare": "selectedFields",
+        "fieldsToCompare": {
+          "fields": [
+            {
+              "fieldName": "id"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "784e5d3e-5237-48d9-82eb-c7e15ca53dba",
+      "name": "重複排除",
+      "type": "n8n-nodes-base.itemLists",
+      "typeVersion": 2.2,
+      "position": [
+        2420,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "limit",
+        "maxItems": 20
+      },
+      "id": "3a50debc-960d-46ea-b633-43c6344168a9",
+      "name": "件数制限",
+      "type": "n8n-nodes-base.itemLists",
+      "typeVersion": 2.2,
+      "position": [
+        2640,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\n\nfunction someArray(item, items) {\n  let result = false;\n  for (let i of items) {\n    if(i === item) {\n      result = true;\n    }\n  }\n\n  return result;\n}\n\nlet cids = []\nfor (const item of $input.all()) {\n  cids.push(item.json.tags[1][1]);\n}\n\nconsole.log(cids)\n\nlet res = []\n\nconst cards = $('HTTP Request: モナカードAPI').first()\nconsole.log(cards)\nconst details = cards.json.details;\nconsole.log('details')\nconsole.log(details)\n\nconst filtred = []\n\nconsole.log('cids')\nconsole.log(cids)\nfor (const detail of details) {\n  if(someArray(detail.cid, cids)) {\n    continue\n  }\n\n  filtred.push(detail)\n}\n\n\nconsole.log('filtred')\nconsole.log(filtred)\n\nconst targets = [];\nfor (const item of filtred) {\n  targets.push({ json: item })\n}\nreturn targets;"
+      },
+      "id": "915f0006-67ae-4660-8faf-a37fc87fda35",
+      "name": "投稿済みのカードを排除",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        2200,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.tags[0][1] }}",
+              "value2": "monacard"
+            }
+          ]
+        }
+      },
+      "id": "12c0a880-e734-4852-80e3-ba3031f4dc95",
+      "name": "minacardタグでフィルタ",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 1,
+      "position": [
+        1980,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "pubkey": "npub1mw9mq63qxynpae2pn85n9ty8f5tattpxzmlv0z4yl9uvat4wtfkqexqtal",
+        "from": 7
+      },
+      "id": "d106485a-ce09-4f59-a5bb-8c0e327432f3",
+      "name": "Nostr Read: 過去投稿の取得",
+      "type": "n8n-nodes-nostrobots.nostrobotsread",
+      "typeVersion": 1,
+      "position": [
+        1800,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://card.mona.jp/api/card_detail",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "update_time",
+              "value": "={{ Math.floor(new Date($json[\"timestamp\"]).getTime()/1000)- (60*60*3) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f474732c-48d7-47a5-825e-91906d775be8",
+      "name": "HTTP Request: モナカードAPI",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        1360,
+        620
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request: モナカードAPI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF エラーでない場合": {
+      "main": [
+        [
+          {
+            "node": "Nostr Read: 過去投稿の取得",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "重複排除": {
+      "main": [
+        [
+          {
+            "node": "件数制限",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "件数制限": {
+      "main": [
+        [
+          {
+            "node": "Nostr Write",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "投稿済みのカードを排除": {
+      "main": [
+        [
+          {
+            "node": "重複排除",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "minacardタグでフィルタ": {
+      "main": [
+        [
+          {
+            "node": "投稿済みのカードを排除",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nostr Read: 過去投稿の取得": {
+      "main": [
+        [
+          {
+            "node": "minacardタグでフィルタ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request: モナカードAPI": {
+      "main": [
+        [
+          {
+            "node": "IF エラーでない場合",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "versionId": "513017d9-777a-4fee-818e-13e71e7b44e7",
+  "id": "1",
+  "meta": {
+    "instanceId": "a4e24eaa82e1a207a370877d5024e382b264ae9c3df264633893c8f98721e5de"
+  },
+  "tags": []
+}
