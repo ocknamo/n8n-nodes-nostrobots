@@ -1,0 +1,66 @@
+{
+  "name": "n8nblog　RSS_feed_bot",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 0,
+              "minute": 24
+            }
+          ]
+        }
+      },
+      "id": "c0a66d1b-acd2-436b-bf21-daa84d2d5da7",
+      "name": "RSS Feed Trigger",
+      "type": "n8n-nodes-rss-feed-trigger.rssFeedTrigger",
+      "typeVersion": 1,
+      "position": [
+        880,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "content": "=【{{ $json.title }}】\n{{ $json.content }}\n{{ $json.link }}"
+      },
+      "id": "386a2d31-d5b5-460a-a4db-5450edc43e9a",
+      "name": "Nostr Write",
+      "type": "n8n-nodes-nostrobots.nostrobots",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        300
+      ],
+      "credentials": {
+        "nostrobotsApi": {
+          "id": "xbj3sn1yGpFSkFcj",
+          "name": "Nostrobots  n8n RSS"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "RSS Feed Trigger": {
+      "main": [
+        [
+          {
+            "node": "Nostr Write",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "versionId": "e0dcdeb1-1e8a-4992-9897-5cb941113a86",
+  "id": "g61UlD3rYxfhmNuO",
+  "meta": {
+    "instanceId": "a4e24eaa82e1a207a370877d5024e382b264ae9c3df264633893c8f98721e5de"
+  },
+  "tags": []
+}
