@@ -4,6 +4,9 @@ on:
   pull_request:
     types:
       - closed
+  issue_comment:
+    types:
+      - created
 
 jobs:
   notify:
@@ -20,3 +23,20 @@ jobs:
             ${{ github.event.pull_request.html_url }}
           tags: |
             - ["t", "n8n-nodes-nostrobots"]
+            - ["r", "${{ github.event.pull_request.html_url }}"]
+  add_issue_comment:
+    if: ${{ !github.event.issue.pull_request }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: snow-actions/nostr@v1.6.0
+        with:
+          relays: ${{ vars.NOSTR_RELAYS }}
+          private-key: ${{ secrets.NOSTR_PRIVATE_KEY }}
+          content: |
+            #n8n-nodes-nostrobots added issue comment.
+            ${{ github.event.comment.user.name }}
+            ${{ github.event.comment.url }}
+          tags: |
+            - ["t", "n8n-nodes-nostrobots"]
+            - ["r", "${{ github.event.comment.url }}"]
