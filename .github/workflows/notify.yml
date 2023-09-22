@@ -10,6 +10,7 @@ on:
 
 jobs:
   notify:
+    if: ${{ github.event.action == 'closed' }}
     if: ${{ github.event.pull_request.merged == true }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -25,6 +26,7 @@ jobs:
             - ["t", "n8n-nodes-nostrobots"]
             - ["r", "${{ github.event.pull_request.html_url }}"]
   add_issue_comment:
+    if: ${{ github.event.action == 'created' }}
     if: ${{ !github.event.issue.pull_request }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
