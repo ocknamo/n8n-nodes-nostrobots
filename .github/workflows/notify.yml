@@ -10,7 +10,7 @@ on:
 
 jobs:
   notify:
-    if: ${{ github.event.pull_request.merged == true }}
+    if: ${{ github.event.action == 'closed' && github.event.pull_request.merged == true }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -25,7 +25,7 @@ jobs:
             - ["t", "n8n-nodes-nostrobots"]
             - ["r", "${{ github.event.pull_request.html_url }}"]
   add_issue_comment:
-    if: ${{ !github.event.issue.pull_request }}
+    if: ${{ github.event.action == 'created' && !github.event.issue.pull_request }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -36,7 +36,7 @@ jobs:
           content: |
             #n8n-nodes-nostrobots added issue comment.
             ${{ github.event.comment.user.name }}
-            ${{ github.event.comment.url }}
+            ${{ github.event.comment.html_url }}
           tags: |
             - ["t", "n8n-nodes-nostrobots"]
-            - ["r", "${{ github.event.comment.url }}"]
+            - ["r", "${{ github.event.comment.html_url }}"]
