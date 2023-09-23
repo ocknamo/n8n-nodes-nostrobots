@@ -4,12 +4,16 @@ on:
   pull_request:
     types:
       - closed
+      - opened
+  issues:
+    types:
+      - opened
   issue_comment:
     types:
       - created
 
 jobs:
-  notify:
+  pr-merged-notify:
     if: ${{ github.event.action == 'closed' && github.event.pull_request.merged == true }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -19,11 +23,42 @@ jobs:
           relays: ${{ vars.NOSTR_RELAYS }}
           private-key: ${{ secrets.NOSTR_PRIVATE_KEY }}
           content: |
-            #n8n-nodes-nostrobots ${{ github.event.pull_request.title }}
+            #n8n-nodes-nostrobots ${{ github.event.pull_request.title }} ${{ github.event.action }}
             ${{ github.event.pull_request.html_url }}
           tags: |
             - ["t", "n8n-nodes-nostrobots"]
             - ["r", "${{ github.event.pull_request.html_url }}"]
+  pr-open-notify:
+    if: ${{ github.event.action == 'opened' && github.event.pull_request.state == 'open' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: snow-actions/nostr@v1.6.0
+        with:
+          relays: ${{ vars.NOSTR_RELAYS }}
+          private-key: ${{ secrets.NOSTR_PRIVATE_KEY }}
+          content: |
+            #n8n-nodes-nostrobots ${{ github.event.pull_request.title }} ${{ github.event.action }}
+            ${{ github.event.pull_request.html_url }}
+          tags: |
+            - ["t", "n8n-nodes-nostrobots"]
+            - ["r", "${{ github.event.pull_request.html_url }}"]
+  issue_opened:
+    if: ${{ !!github.event.issue && github.event.action == 'opened' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: snow-actions/nostr@v1.6.0
+        with:
+          relays: ${{ vars.NOSTR_RELAYS }}
+          private-key: ${{ secrets.NOSTR_PRIVATE_KEY }}
+          content: |
+            #n8n-nodes-nostrobots issue opened.
+            ${{ github.event.issue.title }}
+            ${{ github.event.issue.html_url }}
+          tags: |
+            - ["t", "n8n-nodes-nostrobots"]
+            - ["r", "${{ github.event.issue.html_url }}"]
   add_issue_comment:
     if: ${{ github.event.action == 'created' && !github.event.issue.pull_request }}
     runs-on: ubuntu-latest
@@ -34,7 +69,7 @@ jobs:
           relays: ${{ vars.NOSTR_RELAYS }}
           private-key: ${{ secrets.NOSTR_PRIVATE_KEY }}
           content: |
-            #n8n-nodes-nostrobots added issue comment.
+            #n8n-nodes-nostrobots issue comment added.
             ${{ github.event.comment.user.name }}
             ${{ github.event.comment.html_url }}
           tags: |
