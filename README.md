@@ -1,3 +1,7 @@
+<img src="./assets/top-image.png" width=600px height=auto />
+
+日本語は[こちら](./README-ja.md)。
+
 # n8n-nodes-Nostrobots
 
 n8n node for nostr.
@@ -23,7 +27,8 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 
 - Nostr Write (Nostrobots)
   - Send kind1 note
-  - Send event(full custom)
+  - Send event(advanced)
+  - Raw Json Event(advanced)
 - Nostr Read
   - Fetch events
     - Qyery by eventId, public key.
@@ -77,6 +82,9 @@ yarn lint
 - Query events by mention.
 - Trigger node by getting event from relay.
 
+## See also
+
+- [ノーコードで作るnostrボット - n8n-nostrobots](https://habla.news/u/ocknamo@ocknamo.com/1702402471044) (japanese)
 
 ## License
 
