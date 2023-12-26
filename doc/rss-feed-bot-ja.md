@@ -53,7 +53,7 @@ https://docs.n8n.io/hosting/
 
 https://apps.umbrel.com/app/n8n
 
-![unbrelAppStore](https://lh3.googleusercontent.com/pw/ABLVV843Y0nvCrczIm9ZdL6wnJ7uMnMBpkN9LANMHUH1cPwSTMKs5uMizBOQtJF0LwFxv3omO09-tqRvyzvz4KAIkKtlTwILHZR-S6cSvpeSHu_Yj9nqM4jZt1lIWef5TRap0hsoMUUeFGkdKMhNMYUvqI7UBw=w1850-h969-s-no-gm?authuser=0)
+![umbrelAppStore](https://lh3.googleusercontent.com/pw/ABLVV843Y0nvCrczIm9ZdL6wnJ7uMnMBpkN9LANMHUH1cPwSTMKs5uMizBOQtJF0LwFxv3omO09-tqRvyzvz4KAIkKtlTwILHZR-S6cSvpeSHu_Yj9nqM4jZt1lIWef5TRap0hsoMUUeFGkdKMhNMYUvqI7UBw=w1850-h969-s-no-gm?authuser=0)
 
 ### コミュニティノードのインストール方法
 
@@ -61,7 +61,7 @@ https://apps.umbrel.com/app/n8n
 
 https://docs.n8n.io/integrations/community-nodes/
 
-ここではn8n-nodes-nostrobotsのインストール方法だけ解説します。
+n8n-nodes-nostrobotsのインストール方法を解説します。
 
 サイドメニューの`Settings`から`Community nodes`をページに移動し、インストールします
 

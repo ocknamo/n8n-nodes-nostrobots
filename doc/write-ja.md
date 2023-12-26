@@ -27,7 +27,7 @@ Nostrのリレーにイベントの書き込みを行うノードです。
 
 ### Event(advanced)
 
-BasicNoteと異なりkindやtagsを設定することができます。利用するには少なくともNIP-01を理解する必要があると思われます。
+BasicNoteと異なりkindやtagsを設定することができます。利用するには少なくとも[NIP-01](https://github.com/nostr-protocol/nips/blob/master/01.md)を理解する必要があると思われます。
 
 
 BasicNoteから追加になるメニュー項目がかなりたくさんあります。以下に箇条書します。
