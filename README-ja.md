@@ -13,11 +13,11 @@ Nostrのためのn8nノード。
 
 [n8n](https://n8n.io/) は [フェアコードライセンス](https://docs.n8n.io/reference/license/) のワークフロー自動化プラットフォームです。
 
-[Installation](#installation)  
-[Operations](#operations)  
-[Credentials](#credentials)
-[Usage](#usage)
-[Resources](#resources)  
+* [Installation](#installation)
+* [Operations](#operations)
+* [Credentials](#credentials)
+* [Usage](#usage)
+* [Resources](#resources)
 
 ## Installation
 
@@ -25,11 +25,11 @@ n8n コミュニティ ノードのドキュメントの [インストール ガ
 
 ## Operations
 
-- Nostr Write (Nostr Robots)
+- [Nostr Write (Nostr Robots)](./doc/write-ja.md)
   - kind1 note の送信
   - イベントの送信(advanced)
   - 生のJsonイベント(advanced)
-- Nostr Read
+- [Nostr Read](./doc/read-ja.md)
   - イベントの取得
   - イベントID・公開鍵によるクエリ。
 
@@ -40,7 +40,7 @@ n8n コミュニティ ノードのドキュメントの [インストール ガ
 
 ## Usage
 
-TBD
+[簡単なRSSフィードボットを作成するチュートリアル](./doc//rss-feed-bot-ja.md)を試すことができます。
 
 ## Resources
 

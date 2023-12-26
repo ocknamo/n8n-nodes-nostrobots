@@ -13,11 +13,11 @@ This is an n8n community node. It lets you use nostr in your n8n workflows.
 
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
-[Installation](#installation)  
-[Operations](#operations)  
-[Credentials](#credentials)
-[Usage](#usage)
-[Resources](#resources)  
+* [Installation](#installation)  
+* [Operations](#operations)  
+* [Credentials](#credentials)
+* [Usage](#usage)
+* [Resources](#resources)  
 
 ## Installation
 
@@ -25,11 +25,11 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 
 ## Operations
 
-- Nostr Write (Nostrobots)
+- [Nostr Write (Nostrobots)](./doc/write.md)
   - Send kind1 note
   - Send event(advanced)
   - Raw Json Event(advanced)
-- Nostr Read
+- [Nostr Read](./doc/read.md)
   - Fetch events
     - Qyery by eventId, public key.
 
@@ -40,7 +40,7 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 
 ## Usage
 
-TBD
+[Let's try the tutorial on creating an RSS feed bot.](./doc/rss-feed-bot.md).
 
 ## Resources
 
