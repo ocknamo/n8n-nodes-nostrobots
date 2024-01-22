@@ -265,7 +265,7 @@ export class Nostrobots implements INodeType {
 		}
 
 		// nostr relay connections for reuse.
-		let connections: Relay[] | undefined = undefined;
+		let connections: (Relay | undefined)[] | undefined = undefined;
 
 		for (let i = 0; i < items.length; i++) {
 			let otherOption = false;
@@ -336,7 +336,7 @@ export class Nostrobots implements INodeType {
 		// close all connection at finally.
 		if (connections) {
 			connections.forEach((c) => {
-				c.close();
+				c && c.close();
 			});
 		}
 
