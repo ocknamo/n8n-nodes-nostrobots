@@ -1,3 +1,9 @@
+export async function isSupportNip50(relatUrl: string): Promise<boolean> {
+	const supportedNips = await fetchSupportedNips(relatUrl);
+
+	return supportedNips.includes(50);
+}
+
 export async function fetchSupportedNips(relayUrl: string): Promise<number[]> {
 	const info = await fetchRelayInfo(relayUrl);
 	return info.supported_nips ?? [];
