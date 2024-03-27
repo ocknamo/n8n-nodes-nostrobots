@@ -45,8 +45,8 @@ export class Nostrobotsread implements INodeType {
 						value: 'eventid',
 					},
 					{
-						name: 'Word Search',
-						value: 'word',
+						name: 'Text Search',
+						value: 'textSearch',
 					},
 					// {
 					// 	name: 'Mention',
@@ -88,13 +88,13 @@ export class Nostrobotsread implements INodeType {
 					'Target event ID. If there is a relay in the event ID metadata, the request is also sent to that relay.',
 			},
 			{
-				displayName: 'Word',
-				name: 'word',
+				displayName: 'Search Word',
+				name: 'searchWord',
 				type: 'string',
 				required: true,
 				displayOptions: {
 					show: {
-						strategy: ['word'],
+						strategy: ['textSearch'],
 					},
 				},
 				default: '',
@@ -255,7 +255,7 @@ export class Nostrobotsread implements INodeType {
 					};
 					break;
 
-				case 'word':
+				case 'textSearch':
 					const supportedNIP50relayUrls = [];
 
 					for (let index = 0; index < relayArray.length; index++) {
@@ -272,11 +272,11 @@ export class Nostrobotsread implements INodeType {
 						);
 					}
 
-					const word = this.getNodeParameter('word', i) as string;
+					const searchWord = this.getNodeParameter('searchWord', i) as string;
 
 					filter = {
 						kinds: [1],
-						search: word,
+						search: searchWord,
 						since,
 						until,
 					};
