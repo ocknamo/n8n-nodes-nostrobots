@@ -30,8 +30,8 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
   - Send event(advanced)
   - Raw Json Event(advanced)
 - [Nostr Read](./doc/read.md)
-  - Fetch events
-    - Qyery by eventId, public key.
+  - Fetch kind1 events
+    - Query by eventId, public key and string text(NIP-50).
 
 ## Credentials
 
