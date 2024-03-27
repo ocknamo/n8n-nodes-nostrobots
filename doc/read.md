@@ -9,6 +9,7 @@ All you have to do is choose what to set as the filter to send to the relay.
 
 - UserPublickey
 - EventId
+- Text Search
 
 
 ### UserPublickey
@@ -20,6 +21,11 @@ You can specify a public key string that identifies the target user. Either HEX 
 eventId of the target event. If eventId contains relay information, a retrieval request will be sent to that relay in addition to the specified relay.
 
 Either HEX or bech32 (nevent) method can be specified.
+
+### Search Word
+
+The entered text can be used to string search the content of an event; at least one relay which support NIP-50 must be set.
+The target of retrieval is note events (kind1) issued within a specified period of time.
 
 ## Specify period range
 

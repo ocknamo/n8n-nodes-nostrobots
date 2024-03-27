@@ -10,6 +10,7 @@ import { getHexEventId, getHexPubKey } from '../../src/convert/get-hex';
 import { getSince, getUnixtimeFromDateString, getUntilNow } from '../../src/convert/time';
 import { fetchEvents } from '../../src/read';
 import { Event, Filter } from 'nostr-tools';
+import { isSupportNip50 } from '../../src/common/relay-info';
 
 // polyfills
 require('websocket-polyfill');
@@ -43,11 +44,10 @@ export class Nostrobotsread implements INodeType {
 						name: 'EventId',
 						value: 'eventid',
 					},
-					// TODO
-					// {
-					// 	name: 'KeyWord',
-					// 	value: 'word',
-					// },
+					{
+						name: 'Text Search',
+						value: 'textSearch',
+					},
 					// {
 					// 	name: 'Mention',
 					// 	value: 'mention',
@@ -86,6 +86,21 @@ export class Nostrobotsread implements INodeType {
 				placeholder: 'nevent... or raw hex ID',
 				description:
 					'Target event ID. If there is a relay in the event ID metadata, the request is also sent to that relay.',
+			},
+			{
+				displayName: 'Search Word',
+				name: 'searchWord',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						strategy: ['textSearch'],
+					},
+				},
+				default: '',
+				placeholder: 'eg. jack',
+				description:
+					'Set search word and you can get note include its word. You should set relays which supported NIP-50.',
 			},
 			// common option
 			{
@@ -201,41 +216,78 @@ export class Nostrobotsread implements INodeType {
 			let relayArray = relays.split(',');
 
 			let filter: Filter = {};
-			if (strategy === 'pubkey') {
-				const pubkey = getHexPubKey(this.getNodeParameter('pubkey', i) as string);
 
-				const relative = this.getNodeParameter('relative', i) as boolean;
+			const relative = this.getNodeParameter('relative', i) as boolean;
 
-				let since: number;
-				let until: number;
-				if (relative) {
-					const from = this.getNodeParameter('from', i) as number; // ug.
-					const unit = this.getNodeParameter('unit', i) as 'day' | 'hour' | 'minute';
+			let since: number;
+			let until: number;
+			if (relative) {
+				const from = this.getNodeParameter('from', i) as number; // ug.
+				const unit = this.getNodeParameter('unit', i) as 'day' | 'hour' | 'minute';
 
-					since = getSince(from, unit);
-					until = getUntilNow();
-				} else {
-					since = getUnixtimeFromDateString(this.getNodeParameter('since', i) as string);
-					until = getUnixtimeFromDateString(this.getNodeParameter('until', i) as string);
-				}
-
-				filter = {
-					kinds: [1],
-					authors: [pubkey],
-					since,
-					until,
-				};
-			} else if (strategy === 'eventid') {
-				const si = getHexEventId(this.getNodeParameter('eventid', i) as string);
-				const metaRelay = si.relay;
-				relayArray = [...relayArray, ...metaRelay];
-
-				filter = {
-					ids: [si.special],
-					limit: 1,
-				};
+				since = getSince(from, unit);
+				until = getUntilNow();
 			} else {
-				throw new NodeOperationError(this.getNode(), 'Invalid strategy was provided!');
+				since = getUnixtimeFromDateString(this.getNodeParameter('since', i) as string);
+				until = getUnixtimeFromDateString(this.getNodeParameter('until', i) as string);
+			}
+
+			switch (strategy) {
+				case 'pubkey':
+					const pubkey = getHexPubKey(this.getNodeParameter('pubkey', i) as string);
+
+					filter = {
+						kinds: [1],
+						authors: [pubkey],
+						since,
+						until,
+					};
+					break;
+
+				case 'eventid':
+					const si = getHexEventId(this.getNodeParameter('eventid', i) as string);
+					const metaRelay = si.relay;
+					relayArray = [...relayArray, ...metaRelay];
+
+					filter = {
+						ids: [si.special],
+						limit: 1,
+					};
+					break;
+
+				case 'textSearch':
+					const supportedNIP50relayUrls = [];
+
+					for (let index = 0; index < relayArray.length; index++) {
+						const supported = await isSupportNip50(relayArray[index]);
+						if (supported) {
+							supportedNIP50relayUrls.push(relayArray[index]);
+						}
+					}
+
+					if (supportedNIP50relayUrls.length < 1) {
+						throw new NodeOperationError(
+							this.getNode(),
+							'Should set least one relay supported NIP-50!',
+						);
+					}
+
+					const searchWord = this.getNodeParameter('searchWord', i) as string;
+
+					filter = {
+						kinds: [1],
+						search: searchWord,
+						since,
+						until,
+					};
+
+					break;
+
+				default:
+					throw new NodeOperationError(
+						this.getNode(),
+						`Invalid strategy was provided! strategy: ${strategy}`,
+					);
 			}
 
 			/**

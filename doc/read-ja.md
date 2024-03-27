@@ -9,6 +9,7 @@
 
 - UserPublickey
 - EventId
+- Text Search
 
 
 ### UserPublickey
@@ -20,6 +21,12 @@
 対象のイベントのeventIdです。eventIdにリレーの情報が含まれる場合、指定したリレーに加えてそのリレーにも取得リクエストを送ります。
 
 HEXでもbech32(nevent)方式でもどちらでも指定できます。
+
+### Search Word
+
+入力したテキストでイベントの本文を文字列検索することができます。[NIP-50](https://github.com/nostr-protocol/nips/blob/master/50.md)に対応したリレーを設定する必要があります。
+取得の対象は期間指定の範囲内に発行されたノートイベント(kind1)です。
+
 
 ## 期間の範囲指定
 
