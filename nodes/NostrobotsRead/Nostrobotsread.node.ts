@@ -37,25 +37,25 @@ export class Nostrobotsread implements INodeType {
 				type: 'options',
 				options: [
 					{
-						name: 'UserPublickey',
-						value: 'pubkey',
-					},
-					{
 						name: 'EventId',
 						value: 'eventid',
+					},
+					{
+						name: 'Hashtag',
+						value: 'hashtag',
+					},
+					{
+						name: 'RawFilter(advanced)',
+						value: 'rawFilter',
 					},
 					{
 						name: 'Text Search',
 						value: 'textSearch',
 					},
 					{
-						name: 'Hashtag',
-						value: 'hashtag',
+						name: 'UserPublickey',
+						value: 'pubkey',
 					},
-					// {
-					// 	name: 'Mention',
-					// 	value: 'mention',
-					// },
 				],
 				default: 'pubkey',
 				noDataExpression: true,
@@ -119,6 +119,22 @@ export class Nostrobotsread implements INodeType {
 				default: '',
 				placeholder: '#foodstr',
 				description: 'Hashtag search',
+			},
+			{
+				// Raw Filter(advanced)
+				displayName: 'Raw Filter(advanced)',
+				name: 'rawFilter',
+				type: 'json',
+				required: true,
+				displayOptions: {
+					show: {
+						strategy: ['rawFilter'],
+					},
+				},
+				default: '',
+				placeholder: '{ " kind": [1],  "#t": ["foodstr"]}',
+				description: 'Raw filter JSON. But since and until value are overwrited with form value.',
+				hint: 'NIP-01. https://github.com/nostr-protocol/nips/blob/master/01.md#communication-between-clients-and-relays',
 			},
 			// common option
 			{
@@ -311,6 +327,20 @@ export class Nostrobotsread implements INodeType {
 						since,
 						until,
 					};
+
+					break;
+
+				case 'rawFilter':
+					const filterJsonString = this.getNodeParameter('rawFilter', i) as string;
+
+					let json;
+					try {
+						json = JSON.parse(filterJsonString);
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error);
+					}
+
+					filter = { ...json, since, until };
 
 					break;
 
