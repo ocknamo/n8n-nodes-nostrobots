@@ -307,7 +307,7 @@ export class Nostrobotsread implements INodeType {
 
 					filter = {
 						kinds: [1],
-						search: tagString,
+						'#t': [tagString],
 						since,
 						until,
 					};
