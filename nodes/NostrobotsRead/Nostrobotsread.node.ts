@@ -48,6 +48,10 @@ export class Nostrobotsread implements INodeType {
 						name: 'Text Search',
 						value: 'textSearch',
 					},
+					{
+						name: 'Hashtag',
+						value: 'hashtag',
+					},
 					// {
 					// 	name: 'Mention',
 					// 	value: 'mention',
@@ -101,6 +105,20 @@ export class Nostrobotsread implements INodeType {
 				placeholder: 'eg. jack',
 				description:
 					'Set search word and you can get note include its word. You should set relays which supported NIP-50.',
+			},
+			{
+				displayName: 'Hashtag',
+				name: 'hashtag',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						strategy: ['hashtag'],
+					},
+				},
+				default: '',
+				placeholder: '#foodstr',
+				description: 'Hashtag search',
 			},
 			// common option
 			{
@@ -277,6 +295,19 @@ export class Nostrobotsread implements INodeType {
 					filter = {
 						kinds: [1],
 						search: searchWord,
+						since,
+						until,
+					};
+
+					break;
+
+				case 'hashtag':
+					let tagString = this.getNodeParameter('hashtag', i) as string;
+					tagString = tagString.replace('#', '');
+
+					filter = {
+						kinds: [1],
+						'#t': [tagString],
 						since,
 						until,
 					};
