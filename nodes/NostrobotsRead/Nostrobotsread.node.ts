@@ -121,7 +121,6 @@ export class Nostrobotsread implements INodeType {
 				description: 'Hashtag search',
 			},
 			{
-				// Raw Filter(advanced)
 				displayName: 'Raw Filter(advanced)',
 				name: 'rawFilter',
 				type: 'json',
@@ -215,7 +214,6 @@ export class Nostrobotsread implements INodeType {
 					},
 				},
 			},
-			// relays
 			{
 				displayName: 'Custom Relay',
 				name: 'relay',
