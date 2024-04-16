@@ -45,6 +45,10 @@ export class Nostrobotsread implements INodeType {
 						value: 'hashtag',
 					},
 					{
+						name: 'Mention',
+						value: 'mention',
+					},
+					{
 						name: 'RawFilter(advanced)',
 						value: 'rawFilter',
 					},
@@ -134,6 +138,20 @@ export class Nostrobotsread implements INodeType {
 				placeholder: '{ " kind": [1],  "#t": ["foodstr"]}',
 				description: 'Raw filter JSON. But since and until value are overwrited with form value.',
 				hint: 'NIP-01. https://github.com/nostr-protocol/nips/blob/master/01.md#communication-between-clients-and-relays',
+			},
+			{
+				displayName: 'Mention',
+				name: 'mention',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						strategy: ['mention'],
+					},
+				},
+				default: '',
+				placeholder: 'npub...',
+				description: 'Mention search. Please enter the public key of the person mentioned.',
 			},
 			// common option
 			{
@@ -339,6 +357,18 @@ export class Nostrobotsread implements INodeType {
 					}
 
 					filter = { ...json, since, until };
+
+					break;
+
+				case 'mention':
+					const mentionedpubkey = getHexPubKey(this.getNodeParameter('mention', i) as string);
+
+					filter = {
+						kinds: [1],
+						'#p': [mentionedpubkey],
+						since,
+						until,
+					};
 
 					break;
 
