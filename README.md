@@ -31,7 +31,7 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
   - Raw Json Event(advanced)
 - [Nostr Read](./doc/read.md)
   - Fetch kind1 events
-    - Query by eventId, public key, search word(NIP-50) and hashtag. 
+    - Query by eventId, public key, search word(NIP-50), hashtag, mention, and json filter. 
 
 ## Credentials
 
@@ -77,7 +77,6 @@ yarn lint
 
 ## TODO
 
-- Query events by mention.
 - Trigger node by getting event from relay.
 
 ## See also
