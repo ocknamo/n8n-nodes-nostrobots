@@ -6,11 +6,13 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { defaultRelays } from '../../src/constants/rerays';
-import { getHexEventId, getHexPubKey } from '../../src/convert/get-hex';
+import { getHexEventId } from '../../src/convert/get-hex';
 import { getSince, getUnixtimeFromDateString, getUntilNow } from '../../src/convert/time';
 import { fetchEvents } from '../../src/read';
 import { Event, Filter } from 'nostr-tools';
 import { isSupportNip50 } from '../../src/common/relay-info';
+import { FilterStrategy, buildFilter } from '../../src/common/filter';
+import { ShareableIdentifier } from '../../src/convert/parse-tlv-hex';
 
 // polyfills
 require('websocket-polyfill');
@@ -97,7 +99,7 @@ export class Nostrobotsread implements INodeType {
 			},
 			{
 				displayName: 'Search Word',
-				name: 'searchWord',
+				name: 'textSearch',
 				type: 'string',
 				required: true,
 				displayOptions: {
@@ -135,7 +137,7 @@ export class Nostrobotsread implements INodeType {
 					},
 				},
 				default: '',
-				placeholder: '{ " kind": [1],  "#t": ["foodstr"]}',
+				placeholder: '{ "kinds": [1],  "#t": ["foodstr"]}',
 				description: 'Raw filter JSON. But since and until value are overwrited with form value.',
 				hint: 'NIP-01. https://github.com/nostr-protocol/nips/blob/master/01.md#communication-between-clients-and-relays',
 			},
@@ -255,7 +257,7 @@ export class Nostrobotsread implements INodeType {
 		 * Handle data coming from previous nodes
 		 */
 		const items = this.getInputData();
-		const strategy = this.getNodeParameter('strategy', 0) as string;
+		const strategy = this.getNodeParameter('strategy', 0) as FilterStrategy;
 		const errorWithEmptyResult = this.getNodeParameter('errorWithEmptyResult', 0) as string;
 
 		let events: Event[] = [];
@@ -265,119 +267,60 @@ export class Nostrobotsread implements INodeType {
 			const relays = this.getNodeParameter('relay', i) as string;
 			let relayArray = relays.split(',');
 
-			let filter: Filter = {};
+			let relative: boolean | undefined = undefined;
+			let since: number | undefined = undefined;
+			let until: number | undefined = undefined;
 
-			const relative = this.getNodeParameter('relative', i) as boolean;
+			if (strategy !== 'eventid') {
+				relative = this.getNodeParameter('relative', i) as boolean;
 
-			let since: number;
-			let until: number;
-			if (relative) {
-				const from = this.getNodeParameter('from', i) as number; // ug.
-				const unit = this.getNodeParameter('unit', i) as 'day' | 'hour' | 'minute';
+				if (relative) {
+					const from = this.getNodeParameter('from', i) as number; // ug.
+					const unit = this.getNodeParameter('unit', i) as 'day' | 'hour' | 'minute';
 
-				since = getSince(from, unit);
-				until = getUntilNow();
-			} else {
-				since = getUnixtimeFromDateString(this.getNodeParameter('since', i) as string);
-				until = getUnixtimeFromDateString(this.getNodeParameter('until', i) as string);
+					since = getSince(from, unit);
+					until = getUntilNow();
+				} else if (relative) {
+					since = getUnixtimeFromDateString(this.getNodeParameter('since', i) as string);
+					until = getUnixtimeFromDateString(this.getNodeParameter('until', i) as string);
+				}
 			}
 
-			switch (strategy) {
-				case 'pubkey':
-					const pubkey = getHexPubKey(this.getNodeParameter('pubkey', i) as string);
+			/**
+			 * Update relay
+			 */
+			let si: ShareableIdentifier | undefined;
 
-					filter = {
-						kinds: [1],
-						authors: [pubkey],
-						since,
-						until,
-					};
-					break;
+			if (strategy === 'eventid') {
+				si = getHexEventId(this.getNodeParameter('eventid', i) as string);
+				const metaRelay = si.relay;
+				relayArray = [...relayArray, ...metaRelay];
+			} else if (strategy === 'textSearch') {
+				const supportedNIP50relayUrls = [];
 
-				case 'eventid':
-					const si = getHexEventId(this.getNodeParameter('eventid', i) as string);
-					const metaRelay = si.relay;
-					relayArray = [...relayArray, ...metaRelay];
-
-					filter = {
-						ids: [si.special],
-						limit: 1,
-					};
-					break;
-
-				case 'textSearch':
-					const supportedNIP50relayUrls = [];
-
-					for (let index = 0; index < relayArray.length; index++) {
-						const supported = await isSupportNip50(relayArray[index]);
-						if (supported) {
-							supportedNIP50relayUrls.push(relayArray[index]);
-						}
+				for (let index = 0; index < relayArray.length; index++) {
+					const supported = await isSupportNip50(relayArray[index]);
+					if (supported) {
+						supportedNIP50relayUrls.push(relayArray[index]);
 					}
+				}
 
-					if (supportedNIP50relayUrls.length < 1) {
-						throw new NodeOperationError(
-							this.getNode(),
-							'Should set least one relay supported NIP-50!',
-						);
-					}
-
-					const searchWord = this.getNodeParameter('searchWord', i) as string;
-
-					filter = {
-						kinds: [1],
-						search: searchWord,
-						since,
-						until,
-					};
-
-					break;
-
-				case 'hashtag':
-					let tagString = this.getNodeParameter('hashtag', i) as string;
-					tagString = tagString.replace('#', '');
-
-					filter = {
-						kinds: [1],
-						'#t': [tagString],
-						since,
-						until,
-					};
-
-					break;
-
-				case 'rawFilter':
-					const filterJsonString = this.getNodeParameter('rawFilter', i) as string;
-
-					let json;
-					try {
-						json = JSON.parse(filterJsonString);
-					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error);
-					}
-
-					filter = { ...json, since, until };
-
-					break;
-
-				case 'mention':
-					const mentionedpubkey = getHexPubKey(this.getNodeParameter('mention', i) as string);
-
-					filter = {
-						kinds: [1],
-						'#p': [mentionedpubkey],
-						since,
-						until,
-					};
-
-					break;
-
-				default:
+				if (supportedNIP50relayUrls.length < 1) {
 					throw new NodeOperationError(
 						this.getNode(),
-						`Invalid strategy was provided! strategy: ${strategy}`,
+						'Should set least one relay supported NIP-50!',
 					);
+				}
+
+				relayArray = supportedNIP50relayUrls;
 			}
+
+			const strategyInfo = {
+				eventid: si?.special,
+				[strategy]: this.getNodeParameter(strategy, i) as string,
+			};
+
+			const filter: Filter = buildFilter(strategy, strategyInfo, since, until);
 
 			/**
 			 * fetch events
