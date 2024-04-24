@@ -303,7 +303,14 @@ export class Nostrobots implements INodeType {
 					event.created_at = this.getNodeParameter('createdAt', i) as string;
 				}
 			} else if (resource === 'json') {
-				event = this.getNodeParameter('jsonEvent', i) as string;
+				const eventString = this.getNodeParameter('jsonEvent', i) as string;
+
+				try {
+					event = JSON.parse(eventString);
+				} catch (error) {
+					console.warn('Json parse failed.');
+					throw new NodeOperationError(this.getNode(), error);
+				}
 			} else {
 				throw new NodeOperationError(this.getNode(), 'Invalid resource was provided!');
 			}
