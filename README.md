@@ -32,6 +32,8 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 - [Nostr Read](./doc/read.md)
   - Fetch kind1 events
     - Query by eventId, public key, search word(NIP-50), hashtag, mention, and json filter. 
+- Nostr Utils
+  - Conversion from event to naddr, nevent.
 
 ## Credentials
 

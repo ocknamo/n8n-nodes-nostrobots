@@ -8,12 +8,12 @@ import {
 import { Event, nip19 } from 'nostr-tools';
 import { defaultRelays } from '../../src/constants/rerays';
 
-export class NostrobotsUtils implements INodeType {
+export class Nostrobotsutils implements INodeType {
 	description: INodeTypeDescription = {
 		// Basic node details will go here
 		displayName: 'Nostr Utils',
 		name: 'nostrobotsutils',
-		icon: 'file:nostrobots.svg',
+		icon: 'file:nostrobotsutils.svg',
 		group: ['transform'],
 		version: 1,
 		description: 'Nostr Utility',
@@ -22,12 +22,6 @@ export class NostrobotsUtils implements INodeType {
 		},
 		inputs: ['main'],
 		outputs: ['main'],
-		credentials: [
-			{
-				name: 'nostrobotsApi',
-				required: false,
-			},
-		],
 		properties: [
 			// Resources and operations will go here
 			{
@@ -51,7 +45,7 @@ export class NostrobotsUtils implements INodeType {
 				type: 'options',
 				displayOptions: {
 					show: {
-						resource: ['convert'],
+						operation: ['convert'],
 					},
 				},
 				options: [
@@ -122,7 +116,7 @@ export class NostrobotsUtils implements INodeType {
 			}
 
 			// Get relay input
-			const relays = this.getNodeParameter('relay', i) as string;
+			const relays = this.getNodeParameter('relayhints', i) as string;
 			const relayArray = relays.split(',');
 
 			switch (output) {
