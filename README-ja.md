@@ -32,6 +32,8 @@ n8n コミュニティ ノードのドキュメントの [インストール ガ
 - [Nostr Read](./doc/read-ja.md)
   - イベントの取得
   - イベントID・公開鍵・文字列検索(NIP-50)・ハッシュタグ・メンション・jsonのフィルタによるクエリ。
+- Nostr Utils
+  - イベントからnaddr, neventへの変換
 
 ## Credentials
 
