@@ -30,22 +30,26 @@ export class Nostrobotsutils implements INodeType {
 				type: 'options',
 				options: [
 					{
-						name: 'Convert',
-						value: 'convert',
+						name: 'ConvertEvent',
+						value: 'convertEvent',
+					},
+					{
+						name: 'Transform',
+						value: 'transform',
 					},
 				],
-				default: 'convert',
+				default: 'convertEvent',
 				noDataExpression: true,
 				required: true,
 				description: 'Utility type',
 			},
 			{
-				displayName: 'Output',
-				name: 'output',
+				displayName: 'ConvertOutput',
+				name: 'convertOutput',
 				type: 'options',
 				displayOptions: {
 					show: {
-						operation: ['convert'],
+						operation: ['convertEvent'],
 					},
 				},
 				options: [
@@ -72,7 +76,7 @@ export class Nostrobotsutils implements INodeType {
 				required: true,
 				displayOptions: {
 					show: {
-						output: ['naddr', 'nevent'],
+						convertOutput: ['naddr', 'nevent'],
 					},
 				},
 				default: '',
@@ -85,12 +89,109 @@ export class Nostrobotsutils implements INodeType {
 				type: 'string',
 				displayOptions: {
 					show: {
-						output: ['naddr', 'nevent'],
+						convertOutput: ['naddr', 'nevent'],
 					},
 				},
 				default: defaultRelays.join(','),
 				placeholder: 'wss://relay.damus.io,wss://nostr.wine',
 				description: 'Relay address joined with ","',
+			},
+			// For transform
+			{
+				displayName: 'TransformOutput',
+				name: 'transformOutput',
+				type: 'options',
+				displayOptions: {
+					show: {
+						operation: ['transform'],
+					},
+				},
+				options: [
+					{
+						name: 'Npub',
+						value: 'npub',
+						description: 'Bech 32 npub',
+						action: 'transform to npub',
+					},
+					{
+						name: 'Nsec',
+						value: 'nsec',
+						description: 'Bech 32 nsec',
+						action: 'transform to nsec from hex secret key',
+					},
+					{
+						name: 'Hexpubkey',
+						value: 'hexpubkey',
+						description: 'Hex publickey',
+						action: 'transform to hex publickey',
+					},
+					{
+						name: 'Hexseckey',
+						value: 'hexseckey',
+						description: 'Hex secretkey',
+						action: 'transform to hex secretlickey from nsec',
+					},
+				],
+				default: 'npub',
+			},
+			{
+				displayName: 'TransformInput',
+				name: 'transformInput',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						operation: ['transform'],
+					},
+				},
+				default: '',
+				placeholder: 'npub...',
+				description: 'Set input value',
+			},
+			// Hints
+			{
+				displayName: 'Select input value from Nsec or Hexpubkey or Hexseckey',
+				name: 'Npubnotice',
+				type: 'notice',
+				default: '',
+				displayOptions: {
+					show: {
+						transformOutput: ['npub'],
+					},
+				},
+			},
+			{
+				displayName: 'Set hex secretkey as input value',
+				name: 'Nsecnotice',
+				type: 'notice',
+				default: '',
+				displayOptions: {
+					show: {
+						transformOutput: ['nsec'],
+					},
+				},
+			},
+			{
+				displayName: 'Select input value from Npub or Nsec or Hexseckey',
+				name: 'Hexpubkeynotice',
+				type: 'notice',
+				default: '',
+				displayOptions: {
+					show: {
+						transformOutput: ['hexpubkey'],
+					},
+				},
+			},
+			{
+				displayName: 'Set nsec as input value',
+				name: 'hexseckeynotice',
+				type: 'notice',
+				default: '',
+				displayOptions: {
+					show: {
+						transformOutput: ['hexseckey'],
+					},
+				},
 			},
 		],
 	};
@@ -100,58 +201,64 @@ export class Nostrobotsutils implements INodeType {
 		const items = this.getInputData();
 		const returnData = [];
 		const operation = this.getNodeParameter('operation', 0) as string;
-		const output = this.getNodeParameter('output', 0) as string;
 
-		if (operation !== 'convert') {
-			throw new NodeOperationError(this.getNode(), 'Invalid convert.');
-		}
+		if (operation === 'convertEvent') {
+			const output = this.getNodeParameter('convertOutput', 0) as string;
+			for (let i = 0; i < items.length; i++) {
+				// Get Event
+				const event = this.getNodeParameter('event', i) as string;
+				const eventJson: Event = typeof event === 'object' ? (event as object) : JSON.parse(event);
 
-		for (let i = 0; i < items.length; i++) {
-			// Get Event
-			const event = this.getNodeParameter('event', i) as string;
-			const eventJson: Event = typeof event === 'object' ? (event as object) : JSON.parse(event);
+				if (!eventJson) {
+					throw new NodeOperationError(this.getNode(), 'Invalid Event json value.');
+				}
 
-			if (!eventJson) {
-				throw new NodeOperationError(this.getNode(), 'Invalid Event json value.');
+				// Get relay input
+				const relays = this.getNodeParameter('relayhints', i) as string;
+				const relayArray = relays.split(',');
+
+				switch (output) {
+					case 'naddr':
+						const dtag = eventJson.tags.find((tag) => tag[0] === 'd');
+
+						if (!dtag) {
+							throw new NodeOperationError(
+								this.getNode(),
+								'Invalid Event json value with no d tag.',
+							);
+						}
+
+						const d = dtag[1];
+
+						const naddr = nip19.naddrEncode({
+							identifier: d,
+							pubkey: eventJson.pubkey,
+							kind: eventJson.kind,
+							relays: relayArray,
+						});
+
+						returnData.push({ naddr });
+						break;
+
+					case 'nevent':
+						const nevent = nip19.neventEncode({
+							id: eventJson.id,
+							relays: relayArray,
+							author: eventJson.pubkey,
+						});
+
+						returnData.push({ nevent });
+						break;
+
+					default:
+						break;
+				}
 			}
-
-			// Get relay input
-			const relays = this.getNodeParameter('relayhints', i) as string;
-			const relayArray = relays.split(',');
-
-			switch (output) {
-				case 'naddr':
-					const dtag = eventJson.tags.find((tag) => tag[0] === 'd');
-
-					if (!dtag) {
-						throw new NodeOperationError(this.getNode(), 'Invalid Event json value with no d tag.');
-					}
-
-					const d = dtag[1];
-
-					const naddr = nip19.naddrEncode({
-						identifier: d,
-						pubkey: eventJson.pubkey,
-						kind: eventJson.kind,
-						relays: relayArray,
-					});
-
-					returnData.push({ naddr });
-					break;
-
-				case 'nevent':
-					const nevent = nip19.neventEncode({
-						id: eventJson.id,
-						relays: relayArray,
-						author: eventJson.pubkey,
-					});
-
-					returnData.push({ nevent });
-					break;
-
-				default:
-					break;
-			}
+		} else if (operation === 'transform') {
+			// TODO: 実装
+			// const output = this.getNodeParameter('transformOutput', 0) as string;
+		} else {
+			throw new NodeOperationError(this.getNode(), 'Invalid operation.');
 		}
 
 		// Map data to n8n data structure
