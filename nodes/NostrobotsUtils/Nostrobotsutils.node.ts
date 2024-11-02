@@ -7,6 +7,8 @@ import {
 } from 'n8n-workflow';
 import { Event, nip19 } from 'nostr-tools';
 import { defaultRelays } from '../../src/constants/rerays';
+import { getNpubFromNsecOrHexpubkey } from '../../src/convert/get-npub';
+import { getHexpubkeyfromNpubOrNsecOrHexseckey, getHexSecKey } from '../../src/convert/get-hex';
 
 export class Nostrobotsutils implements INodeType {
 	description: INodeTypeDescription = {
@@ -98,8 +100,8 @@ export class Nostrobotsutils implements INodeType {
 			},
 			// For transform
 			{
-				displayName: 'TransformOutput',
-				name: 'transformOutput',
+				displayName: 'TransformTo',
+				name: 'transformTo',
 				type: 'options',
 				displayOptions: {
 					show: {
@@ -150,13 +152,13 @@ export class Nostrobotsutils implements INodeType {
 			},
 			// Hints
 			{
-				displayName: 'Select input value from Nsec or Hexpubkey or Hexseckey',
+				displayName: 'Select input value from Nsec or Hexpubkey',
 				name: 'Npubnotice',
 				type: 'notice',
 				default: '',
 				displayOptions: {
 					show: {
-						transformOutput: ['npub'],
+						transformTo: ['npub'],
 					},
 				},
 			},
@@ -167,7 +169,7 @@ export class Nostrobotsutils implements INodeType {
 				default: '',
 				displayOptions: {
 					show: {
-						transformOutput: ['nsec'],
+						transformTo: ['nsec'],
 					},
 				},
 			},
@@ -178,7 +180,7 @@ export class Nostrobotsutils implements INodeType {
 				default: '',
 				displayOptions: {
 					show: {
-						transformOutput: ['hexpubkey'],
+						transformTo: ['hexpubkey'],
 					},
 				},
 			},
@@ -189,7 +191,7 @@ export class Nostrobotsutils implements INodeType {
 				default: '',
 				displayOptions: {
 					show: {
-						transformOutput: ['hexseckey'],
+						transformTo: ['hexseckey'],
 					},
 				},
 			},
@@ -256,7 +258,41 @@ export class Nostrobotsutils implements INodeType {
 			}
 		} else if (operation === 'transform') {
 			// TODO: 実装
-			// const output = this.getNodeParameter('transformOutput', 0) as string;
+			const transformTo = this.getNodeParameter('transformTo', 0) as
+				| 'npub'
+				| 'nsec'
+				| 'hexpubkey'
+				| 'hexseckey';
+
+			// Guard
+			if (!['npub', 'nsec', 'hexpubkey', 'hexseckey'].includes(transformTo)) {
+			}
+
+			const input = this.getNodeParameter('transformInput', 0) as string;
+
+			let output = '';
+
+			switch (transformTo) {
+				case 'npub':
+					output = getNpubFromNsecOrHexpubkey(input);
+					break;
+
+				case 'nsec':
+					output = nip19.nsecEncode(input);
+					break;
+
+				case 'hexpubkey':
+					output = getHexpubkeyfromNpubOrNsecOrHexseckey(input);
+					break;
+
+				case 'hexseckey':
+					output = getHexSecKey(input);
+					break;
+
+				default:
+					throw new NodeOperationError(this.getNode(), 'Invalid transformTo value.');
+			}
+			returnData.push({ output, type: transformTo });
 		} else {
 			throw new NodeOperationError(this.getNode(), 'Invalid operation.');
 		}
