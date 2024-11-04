@@ -33,7 +33,8 @@ n8n コミュニティ ノードのドキュメントの [インストール ガ
   - イベントの取得
   - イベントID・公開鍵・文字列検索(NIP-50)・ハッシュタグ・メンション・jsonのフィルタによるクエリ。
 - Nostr Utils
-  - イベントからnaddr, neventへの変換
+  - イベントからnaddr, neventへの変換(ConvertEvent)
+  - bech32、16進数表現の鍵を相互に変換する(TransformKeys)
 
 ## Credentials
 
