@@ -36,8 +36,8 @@ export class Nostrobotsutils implements INodeType {
 						value: 'convertEvent',
 					},
 					{
-						name: 'Transform',
-						value: 'transform',
+						name: 'TransformKeys',
+						value: 'transformKey',
 					},
 				],
 				default: 'convertEvent',
@@ -98,14 +98,14 @@ export class Nostrobotsutils implements INodeType {
 				placeholder: 'wss://relay.damus.io,wss://nostr.wine',
 				description: 'Relay address joined with ","',
 			},
-			// For transform
+			// For transformKey
 			{
 				displayName: 'TransformTo',
 				name: 'transformTo',
 				type: 'options',
 				displayOptions: {
 					show: {
-						operation: ['transform'],
+						operation: ['transformKey'],
 					},
 				},
 				options: [
@@ -143,7 +143,7 @@ export class Nostrobotsutils implements INodeType {
 				required: true,
 				displayOptions: {
 					show: {
-						operation: ['transform'],
+						operation: ['transformKey'],
 					},
 				},
 				default: '',
@@ -256,7 +256,7 @@ export class Nostrobotsutils implements INodeType {
 						break;
 				}
 			}
-		} else if (operation === 'transform') {
+		} else if (operation === 'transformKey') {
 			const transformTo = this.getNodeParameter('transformTo', 0) as
 				| 'npub'
 				| 'nsec'
