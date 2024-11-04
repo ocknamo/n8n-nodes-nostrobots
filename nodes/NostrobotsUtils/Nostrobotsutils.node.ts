@@ -147,7 +147,7 @@ export class Nostrobotsutils implements INodeType {
 					},
 				},
 				default: '',
-				placeholder: 'npub...',
+				placeholder: '5a61f...',
 				description: 'Set input value',
 			},
 			// Hints
@@ -257,7 +257,6 @@ export class Nostrobotsutils implements INodeType {
 				}
 			}
 		} else if (operation === 'transform') {
-			// TODO: 実装
 			const transformTo = this.getNodeParameter('transformTo', 0) as
 				| 'npub'
 				| 'nsec'
