@@ -34,6 +34,7 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
     - Query by eventId, public key, search word(NIP-50), hashtag, mention, and json filter. 
 - Nostr Utils
   - Conversion from event to naddr, nevent.
+  - Transform bech32, hex representation of keys to each other.
 
 ## Credentials
 

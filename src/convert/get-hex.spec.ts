@@ -1,4 +1,4 @@
-import { getHexEventId, getHexPubKey } from './get-hex';
+import { getHexEventId, getHexPubKey, getHexpubkeyfromNpubOrNsecOrHexseckey } from './get-hex';
 
 describe('get-hex', () => {
 	describe('getHexPubKey', () => {
@@ -23,6 +23,31 @@ describe('get-hex', () => {
 				special: '814c6a7f6335bff63037c98d68b538a52b959c778a9a4e6b81b9f619e74d384d',
 				relay: [],
 			});
+		});
+	});
+
+	describe('getHexpubkeyfromNpubOrNsecOrHexseckey', () => {
+		it('should get hex pubkey from npub', () => {
+			expect(
+				getHexpubkeyfromNpubOrNsecOrHexseckey(
+					'npub1tfslfq3v654l64vec6wka30cvwrmyxh0ushk7yvg9a0u6q9uvqrqgy4g92',
+				),
+			).toBe('5a61f4822cd52bfd5599c69d6ec5f86387b21aefe42f6f11882f5fcd00bc6006');
+		});
+		it('should get hex pubkey from nsec', () => {
+			// DONT USE THIS NSEC ANYTHING BUT TEST.
+			expect(
+				getHexpubkeyfromNpubOrNsecOrHexseckey(
+					'nsec1t36eq3qq30uerv4q2l8r6yfsd9vc6anw52w4drggqwppum350eks8q4w7p',
+				),
+			).toBe('5a61f4822cd52bfd5599c69d6ec5f86387b21aefe42f6f11882f5fcd00bc6006');
+		});
+		it('should get hex pubkey from hexseckey', () => {
+			expect(
+				getHexpubkeyfromNpubOrNsecOrHexseckey(
+					'5c759044008bf991b2a057ce3d113069598d766ea29d568d0803821e6e347e6d',
+				),
+			).toBe('5a61f4822cd52bfd5599c69d6ec5f86387b21aefe42f6f11882f5fcd00bc6006');
 		});
 	});
 });

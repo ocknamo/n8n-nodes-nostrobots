@@ -1,5 +1,6 @@
 import { bech32 } from 'bech32';
 import { getShareableIdentifier, ShareableIdentifier } from './parse-tlv-hex';
+import { getPublicKey } from 'nostr-tools';
 
 // TODO: To be injectable.
 const LIMIT = 1000;
@@ -11,6 +12,15 @@ const LIMIT = 1000;
  */
 export function getHexPubKey(src: string): string {
 	return getHex(src, 'npub');
+}
+
+/**
+ * Convert to Hex secret key from src.
+ * src: bech32 or HEX input
+ * return: HEX secret key
+ */
+export function getHexSecKey(src: string): string {
+	return getHex(src, 'nsec');
 }
 
 /**
@@ -47,4 +57,16 @@ export function getHex(src: string, prefix: string): string {
 		res = src;
 	}
 	return res;
+}
+
+export function getHexpubkeyfromNpubOrNsecOrHexseckey(src: string): string {
+	if (src.startsWith('npub')) {
+		return getHexPubKey(src);
+	}
+
+	if (src.startsWith('nsec')) {
+		return getPublicKey(getHexSecKey(src));
+	}
+
+	return getPublicKey(src);
 }
