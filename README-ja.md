@@ -31,7 +31,11 @@ n8n コミュニティ ノードのドキュメントの [インストール ガ
   - 生のJsonイベント(advanced)
 - [Nostr Read](./doc/read-ja.md)
   - イベントの取得
-  - イベントID・公開鍵・文字列検索(NIP-50)・ハッシュタグ・メンション・jsonのフィルタによるクエリ。
+  - イベントID・公開鍵・文字列検索(NIP-50)・ハッシュタグ・メンション・jsonのフィルタによるクエリ
+- [BETA] Nostr Trigger
+  - イベントの購読をトリガーにn8nのワークフローを開始する
+  - 特定のnpubに対するメンションによるワークフローのトリガー
+  - 実行頻度の制限機能（全体、イベント作成者ごとに設定）
 - Nostr Utils
   - イベントからnaddr, neventへの変換(ConvertEvent)
   - bech32、16進数表現の鍵を相互に変換する(TransformKeys)

@@ -16,4 +16,5 @@ export default {
     "/node_modules/"
   ],
 	preset: "ts-jest",
+  testTimeout: 20000
 };

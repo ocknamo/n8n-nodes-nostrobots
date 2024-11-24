@@ -1,0 +1,18 @@
+{
+	"node": "n8n-nodes-base.NostrobotsEventTrigger",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Miscellaneous"],
+	"resources": {
+		"credentialDocumentation": [
+			{
+				"url": "https://github.com/nostr-protocol/nips/blob/master/01.md"
+			}
+		],
+		"primaryDocumentation": [
+			{
+				"url": ""
+			}
+		]
+	}
+}
