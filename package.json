@@ -43,6 +43,7 @@
     "nodes": [
       "dist/nodes/Nostrobots/Nostrobots.node.js",
       "dist/nodes/NostrobotsRead/Nostrobotsread.node.js",
+      "dist/nodes/NostrobotsTrigger/NostrobotsTrigger.node.js",
       "dist/nodes/NostrobotsUtils/Nostrobotsutils.node.js"
     ]
   },
