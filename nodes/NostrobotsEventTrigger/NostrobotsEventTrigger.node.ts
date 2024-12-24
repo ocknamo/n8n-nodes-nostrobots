@@ -8,11 +8,11 @@ import {
 import { SimplePool } from 'nostr-tools';
 import { buildFilter, FilterStrategy } from '../../src/common/filter';
 
-export class NostrobotsTrigger implements INodeType {
+export class NostrobotsEventTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Nostr Trigger',
-		name: 'nostrobotsTrigger',
-		icon: 'file:nostrobotstrigger.svg',
+		name: 'nostrobotsEventTrigger',
+		icon: 'file:nostrobotseventtrigger.svg',
 		group: ['trigger'],
 		version: 1,
 		description: '[BETA]Nostr Trigger',
