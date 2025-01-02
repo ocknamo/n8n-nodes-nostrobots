@@ -7,6 +7,8 @@ import {
 } from 'n8n-workflow';
 import { SimplePool } from 'nostr-tools';
 import { buildFilter, FilterStrategy } from '../../src/common/filter';
+import { getSecFromMsec } from '../../src/convert/time';
+import { TimeLimitedStore } from '../../src/common/time-limited-store';
 
 export class NostrobotsEventTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -134,7 +136,7 @@ export class NostrobotsEventTrigger implements INodeType {
 			},
 		],
 	};
-	// The execute method will go here
+
 	async trigger(this: ITriggerFunctions): Promise<ITriggerResponse> {
 		const strategy = this.getNodeParameter('strategy', 0) as string;
 		const relay1 = this.getNodeParameter('relay1', 0) as string;
@@ -155,15 +157,24 @@ export class NostrobotsEventTrigger implements INodeType {
 		const pool = new SimplePool();
 
 		const relays = [relay1, relay2];
-		const filter = buildFilter(FilterStrategy.mention, { mention: publickey });
+		const filter = buildFilter(
+			FilterStrategy.mention,
+			{ mention: publickey },
+			getSecFromMsec(Date.now()),
+		);
+
+		const eventIdStore = new TimeLimitedStore();
+		const tenMin = 10 * 60 * 1000;
 
 		pool.sub(relays, [filter]).on('event', (event) => {
+			if (eventIdStore.has(event.id)) {
+				return;
+			}
 			this.emit([this.helpers.returnJsonArray(event)]);
+			eventIdStore.set(event.id, Date.now() + tenMin);
 		});
 
-		// pool.sub()
-
-		// returnData.push({ output, type: transformTo });
+		// TODO: pool reconnection when closed connection.
 
 		// throw new NodeOperationError(this.getNode(), 'Invalid operation.');
 
