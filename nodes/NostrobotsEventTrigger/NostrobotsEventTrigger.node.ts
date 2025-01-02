@@ -9,6 +9,8 @@ import { SimplePool } from 'nostr-tools';
 import { buildFilter, FilterStrategy } from '../../src/common/filter';
 import { getSecFromMsec } from '../../src/convert/time';
 import { TimeLimitedStore } from '../../src/common/time-limited-store';
+import { blackListGuard } from '../../src/guards/black-list-guard';
+import { whiteListGuard } from '../../src/guards/white-list-guard';
 
 export class NostrobotsEventTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -147,8 +149,8 @@ export class NostrobotsEventTrigger implements INodeType {
 		// const ratelimitingCountForOne = this.getNodeParameter('ratelimitingCountForOne', 0) as number;
 		// const period = this.getNodeParameter('period', 0) as number;
 		// const duration = this.getNodeParameter('duration', 0) as number;
-		// const blackList = this.getNodeParameter('blackList', 0) as string;
-		// const whiteList = this.getNodeParameter('whiteList', 0) as string;
+		const blackList = (this.getNodeParameter('blackList', 0) as string).split(',');
+		const whiteList = (this.getNodeParameter('whiteList', 0) as string).split(',');
 
 		if (strategy !== 'mention') {
 			throw new NodeOperationError(this.getNode(), 'Invalid strategy.');
@@ -164,14 +166,23 @@ export class NostrobotsEventTrigger implements INodeType {
 		);
 
 		const eventIdStore = new TimeLimitedStore();
-		const tenMin = 10 * 60 * 1000;
+		const oneMin = 1 * 60 * 1000;
 
 		pool.sub(relays, [filter]).on('event', (event) => {
+			if (!blackListGuard(event, blackList)) {
+				return;
+			}
+
+			if (!whiteListGuard(event, whiteList)) {
+				return;
+			}
+
+			// duplicate check
 			if (eventIdStore.has(event.id)) {
 				return;
 			}
 			this.emit([this.helpers.returnJsonArray(event)]);
-			eventIdStore.set(event.id, Date.now() + tenMin);
+			eventIdStore.set(event.id, Date.now() + oneMin);
 		});
 
 		// TODO: pool reconnection when closed connection.
