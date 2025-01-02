@@ -11,9 +11,9 @@ export class TimeLimitedStore {
 		this.idSet = new Set();
 	}
 
-	set(id: string, priod: number): void {
+	set(id: string, period: number): void {
 		this.idSet.add(id);
-		this.idPeriodMap.set(id, priod);
+		this.idPeriodMap.set(id, period);
 	}
 
 	has(id: string): boolean {
@@ -21,7 +21,11 @@ export class TimeLimitedStore {
 		return this.idSet.has(id);
 	}
 
-	private clearExpierdId(): void {
+	count(id: string): number {
+		return this.idPeriodMap.size;
+	}
+
+	clearExpierdId(): void {
 		const now = Date.now();
 
 		this.idPeriodMap.forEach((v, k, m) => {

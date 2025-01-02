@@ -145,10 +145,10 @@ export class NostrobotsEventTrigger implements INodeType {
 		const relay2 = this.getNodeParameter('relay2', 0) as string;
 		const publickey = this.getNodeParameter('publickey', 0) as string;
 
-		// const ratelimitingCountForAll = this.getNodeParameter('ratelimitingCountForAll', 0) as number;
+		const ratelimitingCountForAll = this.getNodeParameter('ratelimitingCountForAll', 0) as number;
 		// const ratelimitingCountForOne = this.getNodeParameter('ratelimitingCountForOne', 0) as number;
-		// const period = this.getNodeParameter('period', 0) as number;
-		// const duration = this.getNodeParameter('duration', 0) as number;
+		const period = this.getNodeParameter('period', 0) as number;
+		const duration = this.getNodeParameter('duration', 0) as number;
 		const blackList = (this.getNodeParameter('blackList', 0) as string).split(',');
 		const whiteList = (this.getNodeParameter('whiteList', 0) as string).split(',');
 

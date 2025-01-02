@@ -1,3 +1,4 @@
+import { sleep } from '../test/utils';
 import { TimeLimitedStore } from './time-limited-store';
 
 describe('src/common/time-limited-store.ts', () => {
@@ -28,11 +29,7 @@ describe('src/common/time-limited-store.ts', () => {
 		store.set('mock_id_7', Date.now() + 10 * 1000);
 		store.set('mock_id_8', Date.now() + 100 * 1000);
 
-		await new Promise((resolve) => {
-			setTimeout(() => {
-				resolve(true);
-			}, 500);
-		});
+		await sleep(500);
 
 		expect(store.has('mock_id_1')).toBeFalsy();
 		expect(store.has('mock_id_2')).toBeFalsy();
