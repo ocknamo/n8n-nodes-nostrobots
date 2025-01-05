@@ -1,15 +1,15 @@
 import { Event } from 'nostr-tools';
-import { TimeLimitedStore } from '../common/time-limited-store';
+import { TimeLimitedKvStore } from '../common/time-limited-kv-store';
 
 export class RateLimitGuard {
-	private store: TimeLimitedStore;
+	private store: TimeLimitedKvStore;
 	private limitedAll = false;
 	constructor(
 		private readonly count: number,
 		private readonly period: number,
 		private readonly duration: number,
 	) {
-		this.store = new TimeLimitedStore();
+		this.store = new TimeLimitedKvStore();
 
 		setInterval(() => {
 			this.store.clearExpierdId();

@@ -8,7 +8,7 @@ import {
 import { SimplePool } from 'nostr-tools';
 import { buildFilter, FilterStrategy } from '../../src/common/filter';
 import { getSecFromMsec } from '../../src/convert/time';
-import { TimeLimitedStore } from '../../src/common/time-limited-store';
+import { TimeLimitedKvStore } from '../../src/common/time-limited-kv-store';
 import { blackListGuard } from '../../src/guards/black-list-guard';
 import { whiteListGuard } from '../../src/guards/white-list-guard';
 
@@ -165,7 +165,7 @@ export class NostrobotsEventTrigger implements INodeType {
 			getSecFromMsec(Date.now()),
 		);
 
-		const eventIdStore = new TimeLimitedStore();
+		const eventIdStore = new TimeLimitedKvStore();
 		const oneMin = 1 * 60 * 1000;
 
 		pool.sub(relays, [filter]).on('event', (event) => {
