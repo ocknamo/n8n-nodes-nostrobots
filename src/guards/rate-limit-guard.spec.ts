@@ -5,10 +5,11 @@ describe('rate-limit-guard', () => {
 	let guard: RateLimitGuard;
 
 	beforeEach(() => {
-		const count = 10;
-		const period = 2;
-		const duration = 5;
-		guard = new RateLimitGuard(count, period, duration);
+		const countForAll = 10;
+		const countForOne = 5;
+		const period = 4;
+		const duration = 8;
+		guard = new RateLimitGuard(countForAll, countForOne, period, duration);
 	});
 
 	afterEach(() => {
@@ -70,9 +71,9 @@ describe('rate-limit-guard', () => {
 
 		expect(guard.canActivate(event)).toBeFalsy();
 
-		await sleep(2 * 1000);
+		await sleep(3 * 1000);
 		expect(guard.canActivate(event)).toBeFalsy();
-		await sleep(3.5 * 1000);
+		await sleep(6 * 1000);
 		expect(guard.canActivate(event)).toBeTruthy();
 	});
 });
