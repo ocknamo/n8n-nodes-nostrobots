@@ -4,6 +4,8 @@ import { TimeLimitedKvStore } from '../common/time-limited-kv-store';
 export class RateLimitGuard {
 	private store: TimeLimitedKvStore;
 	private limitedAll = false;
+	private intervalId: any;
+
 	constructor(
 		private readonly count: number,
 		private readonly period: number,
@@ -11,7 +13,7 @@ export class RateLimitGuard {
 	) {
 		this.store = new TimeLimitedKvStore();
 
-		setInterval(() => {
+		this.intervalId = setInterval(() => {
 			this.store.clearExpierdId();
 		}, Math.floor((this.period * 1000) / 10));
 	}
@@ -21,8 +23,8 @@ export class RateLimitGuard {
 			return false;
 		}
 
-		this.store.set(event.id, Date.now() + this.period * 1000);
-		if (this.store.count(event.id) > this.count) {
+		this.store.set(event, Date.now() + this.period * 1000);
+		if (this.store.count() > this.count) {
 			this.durationHandling();
 
 			return false;
@@ -37,5 +39,9 @@ export class RateLimitGuard {
 			this.store.clearExpierdId();
 			this.limitedAll = false;
 		}, this.duration);
+	}
+
+	dispose(): void {
+		clearInterval(this.intervalId);
 	}
 }

@@ -9,7 +9,7 @@ describe('src/common/time-limited-ly-store.ts', () => {
 	});
 
 	it('should set store', () => {
-		store.set({ id: 'mock_id_1' } as Event, Date.now());
+		store.set({ id: 'mock_id_1' } as Event, Date.now() + 1000);
 
 		expect(store.has('mock_id_1')).toBeTruthy();
 	});

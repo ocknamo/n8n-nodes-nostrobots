@@ -2,12 +2,20 @@ import { sleep } from '../test/utils';
 import { RateLimitGuard } from './rate-limit-guard';
 
 describe('rate-limit-guard', () => {
-	it('should return true with first event', () => {
-		const count = 10;
-		const period = 60;
-		const duration = 180;
-		const guard = new RateLimitGuard(count, period, duration);
+	let guard: RateLimitGuard;
 
+	beforeEach(() => {
+		const count = 10;
+		const period = 2;
+		const duration = 5;
+		guard = new RateLimitGuard(count, period, duration);
+	});
+
+	afterEach(() => {
+		guard.dispose();
+	});
+
+	it('should return true with first event', () => {
 		const event: any = [
 			{
 				content: 'test',
@@ -24,11 +32,6 @@ describe('rate-limit-guard', () => {
 	});
 
 	it('should return false when the count is exceeded in period', () => {
-		const count = 10;
-		const period = 60;
-		const duration = 180;
-		const guard = new RateLimitGuard(count, period, duration);
-
 		const event: any = [
 			{
 				content: 'test',
@@ -48,37 +51,28 @@ describe('rate-limit-guard', () => {
 		expect(guard.canActivate(event)).toBeFalsy();
 	});
 
-	it.concurrent(
-		'should return true when the count is exceeded in period and wait the duration secounds',
-		async () => {
-			const count = 10;
-			const period = 2;
-			const duration = 5;
-			const guard = new RateLimitGuard(count, period, duration);
+	it('should return true when the count is exceeded in period and wait the duration secounds', async () => {
+		const event: any = [
+			{
+				content: 'test',
+				created_at: 1735829387,
+				id: 'mock_id',
+				kind: 1,
+				pubkey: '2b458550f08fcf75d2bec596c0411c1f4ee93f3820deae951a120c028e30c480',
+				sig: '566a5f94aed2503249c5644c8c37c9a1690fdb87d1ae50a7a72277e71ab5a5090445138d7ae90303c46b2fb1c52b9c50851dcfc16596c127d3bf77ad6666588d',
+				tags: [],
+			},
+		];
 
-			const event: any = [
-				{
-					content: 'test',
-					created_at: 1735829387,
-					id: 'mock_id',
-					kind: 1,
-					pubkey: '2b458550f08fcf75d2bec596c0411c1f4ee93f3820deae951a120c028e30c480',
-					sig: '566a5f94aed2503249c5644c8c37c9a1690fdb87d1ae50a7a72277e71ab5a5090445138d7ae90303c46b2fb1c52b9c50851dcfc16596c127d3bf77ad6666588d',
-					tags: [],
-				},
-			];
+		for (let index = 0; index < 10; index++) {
+			expect(guard.canActivate({ ...event, id: `mock_id_${index}` })).toBeTruthy();
+		}
 
-			for (let index = 0; index < 10; index++) {
-				expect(guard.canActivate({ ...event, id: `mock_id_${index}` })).toBeTruthy();
-			}
+		expect(guard.canActivate(event)).toBeFalsy();
 
-			expect(guard.canActivate(event)).toBeFalsy();
-
-			await sleep(2 * 1000);
-			expect(guard.canActivate(event)).toBeFalsy();
-			await sleep(3.5 * 1000);
-			expect(guard.canActivate(event)).toBeTruthy();
-		},
-		10000,
-	);
+		await sleep(2 * 1000);
+		expect(guard.canActivate(event)).toBeFalsy();
+		await sleep(3.5 * 1000);
+		expect(guard.canActivate(event)).toBeTruthy();
+	});
 });
