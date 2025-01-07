@@ -47,7 +47,6 @@ export class RateLimitGuard {
 
 		if (count > this.countForOne) {
 			this.limitedPubkeysStore.set(event.pubkey, 1, this.duration * 1000);
-
 			this.durationHandling();
 
 			return false;
