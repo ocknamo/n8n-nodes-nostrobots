@@ -2,9 +2,9 @@ import { Event } from 'nostr-tools';
 import { TimeLimitedKvStore } from '../common/time-limited-kv-store';
 
 export class RateLimitGuard {
-	private store: TimeLimitedKvStore;
+	private store: TimeLimitedKvStore<Partial<Event>>;
 	private limitedAll = false;
-	private limitedPubkeys: string[] = [];
+	private limitedPubkeysStore: TimeLimitedKvStore<number>;
 
 	private timerIds: any[] = [];
 
@@ -15,9 +15,11 @@ export class RateLimitGuard {
 		private readonly duration: number,
 	) {
 		this.store = new TimeLimitedKvStore();
+		this.limitedPubkeysStore = new TimeLimitedKvStore();
 
 		const intervalId = setInterval(() => {
-			this.store.clearExpierdId();
+			this.store.clearExpierd();
+			this.limitedPubkeysStore.clearExpierd();
 		}, Math.floor((this.period * 1000) / 10));
 
 		this.timerIds.push(intervalId);
@@ -28,29 +30,38 @@ export class RateLimitGuard {
 			return false;
 		}
 
-		if (this.limitedPubkeys.length !== 0 && this.limitedPubkeys.find((p) => p === event.pubkey)) {
+		if (this.limitedPubkeysStore.count() !== 0 && this.limitedPubkeysStore.has(event.pubkey)) {
 			return false;
 		}
 
-		this.store.set(event, Date.now() + this.period * 1000);
+		this.store.set(event.id, event, Date.now() + this.period * 1000);
 
 		if (this.store.count() > this.countForAll) {
+			this.limitedAll = true;
 			this.durationHandling();
 
 			return false;
 		}
 
-		console.log(this.countForOne);
+		const count = this.store.values().filter((v) => v.value.pubkey === event.pubkey).length;
+
+		if (count > this.countForOne) {
+			this.limitedPubkeysStore.set(event.pubkey, 1, this.duration * 1000);
+
+			this.durationHandling();
+
+			return false;
+		}
 
 		return true;
 	}
 
 	durationHandling(): void {
-		this.limitedAll = true;
 		const timeoutId = setTimeout(() => {
-			this.store.clearExpierdId();
+			this.store.clearExpierd();
+			this.limitedPubkeysStore.clearExpierd();
 			this.limitedAll = false;
-		}, this.duration);
+		}, this.duration * 1000);
 		this.timerIds.push(timeoutId);
 	}
 
