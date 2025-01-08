@@ -1,6 +1,7 @@
 /**
  * This is a simple Store service that stores IDs with a time limit.
- * Suitable for frequently referenced use cases as expired IDs are removed when referenced.
+ * Suitable for frequently referenced use cases as expired key are removed when referenced.
+ * Or, call clearExpierd by yourself.
  */
 export class TimeLimitedKvStore<T> {
 	// NOTE: The period is unixtime in milliseconds.

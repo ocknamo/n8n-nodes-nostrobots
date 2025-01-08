@@ -11,6 +11,7 @@ import { getSecFromMsec } from '../../src/convert/time';
 import { TimeLimitedKvStore } from '../../src/common/time-limited-kv-store';
 import { blackListGuard } from '../../src/guards/black-list-guard';
 import { whiteListGuard } from '../../src/guards/white-list-guard';
+import { RateLimitGuard } from '../../src/guards/rate-limit-guard';
 
 export class NostrobotsEventTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -19,7 +20,7 @@ export class NostrobotsEventTrigger implements INodeType {
 		icon: 'file:nostrobotseventtrigger.svg',
 		group: ['trigger'],
 		version: 1,
-		description: '[BETA]Nostr Trigger',
+		description: '[BETA]Nostr Trigger. This is an experimental feature',
 		eventTriggerDescription: '',
 		activationMessage: 'test',
 		defaults: {
@@ -146,7 +147,7 @@ export class NostrobotsEventTrigger implements INodeType {
 		const publickey = this.getNodeParameter('publickey', 0) as string;
 
 		const ratelimitingCountForAll = this.getNodeParameter('ratelimitingCountForAll', 0) as number;
-		// const ratelimitingCountForOne = this.getNodeParameter('ratelimitingCountForOne', 0) as number;
+		const ratelimitingCountForOne = this.getNodeParameter('ratelimitingCountForOne', 0) as number;
 		const period = this.getNodeParameter('period', 0) as number;
 		const duration = this.getNodeParameter('duration', 0) as number;
 		const blackList = (this.getNodeParameter('blackList', 0) as string).split(',');
@@ -165,8 +166,15 @@ export class NostrobotsEventTrigger implements INodeType {
 			getSecFromMsec(Date.now()),
 		);
 
-		const eventIdStore = new TimeLimitedKvStore();
+		const eventIdStore = new TimeLimitedKvStore<number>();
 		const oneMin = 1 * 60 * 1000;
+
+		const rateGuard = new RateLimitGuard(
+			ratelimitingCountForAll,
+			ratelimitingCountForOne,
+			period,
+			duration,
+		);
 
 		pool.sub(relays, [filter]).on('event', (event) => {
 			if (!blackListGuard(event, blackList)) {
@@ -181,14 +189,17 @@ export class NostrobotsEventTrigger implements INodeType {
 			if (eventIdStore.has(event.id)) {
 				return;
 			}
+
+			// rate limit guard
+			if (!rateGuard.canActivate(event)) {
+				return;
+			}
+
 			this.emit([this.helpers.returnJsonArray(event)]);
-			eventIdStore.set(event.id, Date.now() + oneMin);
+			eventIdStore.set(event.id, 1, Date.now() + oneMin);
 		});
 
 		// TODO: pool reconnection when closed connection.
-
-		// throw new NodeOperationError(this.getNode(), 'Invalid operation.');
-
 		return {};
 	}
 }
