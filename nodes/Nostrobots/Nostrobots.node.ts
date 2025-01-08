@@ -38,7 +38,6 @@ export class Nostrobots implements INodeType {
 			},
 		],
 		properties: [
-			// Resources and operations will go here
 			{
 				displayName: 'Resource',
 				name: 'resource',

@@ -32,7 +32,6 @@ export class Nostrobotsread implements INodeType {
 		inputs: ['main'],
 		outputs: ['main'],
 		properties: [
-			// Resources and operations will go here
 			{
 				displayName: 'Strategy',
 				name: 'strategy',

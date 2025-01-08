@@ -29,7 +29,6 @@ export class NostrobotsEventTrigger implements INodeType {
 		inputs: [],
 		outputs: ['main'],
 		properties: [
-			// Resources and operations will go here
 			{
 				displayName: 'Strategy',
 				name: 'strategy',
