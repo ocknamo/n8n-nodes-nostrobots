@@ -178,27 +178,21 @@ export class NostrobotsEventTrigger implements INodeType {
 		);
 
 		pool.sub(relays, [filter]).on('event', (event) => {
-			console.log('on event!!!!!!!!');
 			if (!blackListGuard(event, blackList)) {
-				console.log('black list');
 				return;
 			}
 
 			if (!whiteListGuard(event, whiteList)) {
-				console.log('white list', whiteList);
-				console.log('event', event);
 				return;
 			}
 
 			// duplicate check
 			if (eventIdStore.has(event.id)) {
-				console.log('duplicate');
 				return;
 			}
 
 			// rate limit guard
 			if (!rateGuard.canActivate(event)) {
-				console.log('rate limit');
 				return;
 			}
 
