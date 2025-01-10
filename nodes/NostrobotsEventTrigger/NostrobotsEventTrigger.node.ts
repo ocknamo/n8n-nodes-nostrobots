@@ -149,8 +149,10 @@ export class NostrobotsEventTrigger implements INodeType {
 		const ratelimitingCountForOne = this.getNodeParameter('ratelimitingCountForOne', 0) as number;
 		const period = this.getNodeParameter('period', 0) as number;
 		const duration = this.getNodeParameter('duration', 0) as number;
-		const blackList = (this.getNodeParameter('blackList', 0) as string).split(',');
-		const whiteList = (this.getNodeParameter('whiteList', 0) as string).split(',');
+		const blackListString = this.getNodeParameter('blackList', 0) as string;
+		const blackList = blackListString ? blackListString.split(',') : [];
+		const whiteListString = this.getNodeParameter('whiteList', 0) as string;
+		const whiteList = whiteListString ? whiteListString.split(',') : [];
 
 		if (strategy !== 'mention') {
 			throw new NodeOperationError(this.getNode(), 'Invalid strategy.');
@@ -176,21 +178,27 @@ export class NostrobotsEventTrigger implements INodeType {
 		);
 
 		pool.sub(relays, [filter]).on('event', (event) => {
+			console.log('on event!!!!!!!!');
 			if (!blackListGuard(event, blackList)) {
+				console.log('black list');
 				return;
 			}
 
 			if (!whiteListGuard(event, whiteList)) {
+				console.log('white list', whiteList);
+				console.log('event', event);
 				return;
 			}
 
 			// duplicate check
 			if (eventIdStore.has(event.id)) {
+				console.log('duplicate');
 				return;
 			}
 
 			// rate limit guard
 			if (!rateGuard.canActivate(event)) {
+				console.log('rate limit');
 				return;
 			}
 
