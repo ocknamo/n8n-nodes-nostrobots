@@ -1,4 +1,4 @@
-import { Event } from 'nostr-tools';
+import { Event } from '../type';
 import { getHexPubKey } from '../convert/get-hex';
 
 export function blackListGuard(event: Event, npubs: string[] = []): boolean {

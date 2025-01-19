@@ -5,7 +5,8 @@ import {
 	INodeTypeDescription,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { Event, nip19 } from 'nostr-tools';
+import { Event } from 'type';
+import { hexToBytes } from '@noble/hashes/utils';
 import { defaultRelays } from '../../src/constants/rerays';
 import { getNpubFromNsecOrHexpubkey } from '../../src/convert/get-npub';
 import { getHexpubkeyfromNpubOrNsecOrHexseckey, getHexSecKey } from '../../src/convert/get-hex';
@@ -203,6 +204,8 @@ export class Nostrobotsutils implements INodeType {
 		const returnData = [];
 		const operation = this.getNodeParameter('operation', 0) as string;
 
+		const nip19 = (await import('nostr-tools')).nip19;
+
 		if (operation === 'convertEvent') {
 			const output = this.getNodeParameter('convertOutput', 0) as string;
 			for (let i = 0; i < items.length; i++) {
@@ -262,25 +265,21 @@ export class Nostrobotsutils implements INodeType {
 				| 'hexpubkey'
 				| 'hexseckey';
 
-			// Guard
-			if (!['npub', 'nsec', 'hexpubkey', 'hexseckey'].includes(transformTo)) {
-			}
-
 			const input = this.getNodeParameter('transformInput', 0) as string;
 
 			let output = '';
 
 			switch (transformTo) {
 				case 'npub':
-					output = getNpubFromNsecOrHexpubkey(input);
+					output = await getNpubFromNsecOrHexpubkey(input);
 					break;
 
 				case 'nsec':
-					output = nip19.nsecEncode(input);
+					output = nip19.nsecEncode(hexToBytes(input));
 					break;
 
 				case 'hexpubkey':
-					output = getHexpubkeyfromNpubOrNsecOrHexseckey(input);
+					output = await getHexpubkeyfromNpubOrNsecOrHexseckey(input);
 					break;
 
 				case 'hexseckey':

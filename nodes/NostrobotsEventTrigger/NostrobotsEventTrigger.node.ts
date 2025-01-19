@@ -5,7 +5,7 @@ import {
 	ITriggerResponse,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { SimplePool } from 'nostr-tools';
+import { Event } from 'type';
 import { buildFilter, FilterStrategy } from '../../src/common/filter';
 import { getSecFromMsec } from '../../src/convert/time';
 import { TimeLimitedKvStore } from '../../src/common/time-limited-kv-store';
@@ -158,6 +158,7 @@ export class NostrobotsEventTrigger implements INodeType {
 			throw new NodeOperationError(this.getNode(), 'Invalid strategy.');
 		}
 
+		const SimplePool = (await import('nostr-tools')).SimplePool;
 		const pool = new SimplePool();
 
 		const relays = [relay1, relay2];
@@ -177,30 +178,35 @@ export class NostrobotsEventTrigger implements INodeType {
 			duration,
 		);
 
-		pool.sub(relays, [filter]).on('event', (event) => {
-			if (!blackListGuard(event, blackList)) {
-				return;
-			}
+		pool.subscribeMany(relays, [filter], {
+			onevent: (event: Event) => {
+				if (!blackListGuard(event, blackList)) {
+					return;
+				}
 
-			if (!whiteListGuard(event, whiteList)) {
-				return;
-			}
+				if (!whiteListGuard(event, whiteList)) {
+					return;
+				}
 
-			// duplicate check
-			if (eventIdStore.has(event.id)) {
-				return;
-			}
+				// duplicate check
+				if (eventIdStore.has(event.id)) {
+					return;
+				}
 
-			// rate limit guard
-			if (!rateGuard.canActivate(event)) {
-				return;
-			}
+				// rate limit guard
+				if (!rateGuard.canActivate(event)) {
+					return;
+				}
 
-			this.emit([this.helpers.returnJsonArray(event)]);
-			eventIdStore.set(event.id, 1, Date.now() + oneMin);
+				this.emit([this.helpers.returnJsonArray(event as Record<string, any>)]);
+				eventIdStore.set(event.id, 1, Date.now() + oneMin);
+			},
+			onclose: (reasons: string[]) => {
+				// TODO: pool reconnection when closed connection.
+				console.log('closed: ', reasons);
+			},
 		});
 
-		// TODO: pool reconnection when closed connection.
 		return {};
 	}
 }

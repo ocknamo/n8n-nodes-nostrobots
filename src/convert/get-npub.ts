@@ -1,5 +1,6 @@
-import { getPublicKey, nip19 } from 'nostr-tools';
+import { hexToBytes } from '@noble/hashes/utils';
 import { getHexSecKey } from './get-hex';
+import { nip19, getPublicKey } from 'nostr-tools';
 
 export function getNpubFromNsecOrHexpubkey(src: string): string {
 	if (src.startsWith('nsec')) {
@@ -10,7 +11,7 @@ export function getNpubFromNsecOrHexpubkey(src: string): string {
 }
 
 export function getNpubFromNsec(src: string): string {
-	return getNpubFromHexpubkey(getPublicKey(getHexSecKey(src)));
+	return getNpubFromHexpubkey(getPublicKey(hexToBytes(getHexSecKey(src))));
 }
 
 export function getNpubFromHexpubkey(src: string): string {

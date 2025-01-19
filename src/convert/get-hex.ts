@@ -1,5 +1,6 @@
 import { bech32 } from 'bech32';
 import { getShareableIdentifier, ShareableIdentifier } from './parse-tlv-hex';
+import { hexToBytes } from '@noble/hashes/utils';
 import { getPublicKey } from 'nostr-tools';
 
 // TODO: To be injectable.
@@ -59,14 +60,14 @@ export function getHex(src: string, prefix: string): string {
 	return res;
 }
 
-export function getHexpubkeyfromNpubOrNsecOrHexseckey(src: string): string {
+export async function getHexpubkeyfromNpubOrNsecOrHexseckey(src: string): Promise<string> {
 	if (src.startsWith('npub')) {
 		return getHexPubKey(src);
 	}
 
 	if (src.startsWith('nsec')) {
-		return getPublicKey(getHexSecKey(src));
+		return getPublicKey(hexToBytes(getHexSecKey(src)));
 	}
 
-	return getPublicKey(src);
+	return getPublicKey(hexToBytes(src));
 }

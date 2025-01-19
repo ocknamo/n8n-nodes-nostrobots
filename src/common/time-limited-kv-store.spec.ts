@@ -1,5 +1,5 @@
 import { TimeLimitedKvStore } from './time-limited-kv-store';
-import { Event } from 'nostr-tools';
+import { Event } from 'type';
 
 describe('src/common/time-limited-ly-store.ts', () => {
 	let store: TimeLimitedKvStore<Partial<Event>>;

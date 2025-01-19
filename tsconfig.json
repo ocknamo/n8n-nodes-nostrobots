@@ -1,9 +1,9 @@
 {
 	"compilerOptions": {
 		"strict": true,
-		"module": "commonjs",
+		"module": "CommonJS",
 		"moduleResolution": "node",
-		"target": "es2019",
+		"target": "ES2015",
 		"lib": ["es2019", "es2020", "es2022.error"],
 		"removeComments": true,
 		"useUnknownInCatchVariables": false,
@@ -20,6 +20,7 @@
 		"sourceMap": true,
 		"skipLibCheck": true,
 		"outDir": "./dist/",
+		"baseUrl": "./src",
 	},
 	"include": [
 		"credentials/**/*",
