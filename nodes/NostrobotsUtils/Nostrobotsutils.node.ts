@@ -7,9 +7,13 @@ import {
 } from 'n8n-workflow';
 import { Event } from 'nostr-tools';
 import { hexToBytes } from '@noble/hashes/utils';
+import ws from 'ws';
 import { defaultRelays } from '../../src/constants/rerays';
 import { getNpubFromNsecOrHexpubkey } from '../../src/convert/get-npub';
 import { getHexpubkeyfromNpubOrNsecOrHexseckey, getHexSecKey } from '../../src/convert/get-hex';
+
+// polyfills
+(global as any).WebSocket = ws;
 
 export class Nostrobotsutils implements INodeType {
 	description: INodeTypeDescription = {

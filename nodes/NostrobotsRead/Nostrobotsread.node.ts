@@ -6,6 +6,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { Event, Filter } from 'nostr-tools';
+import ws from 'ws';
 import { defaultRelays } from '../../src/constants/rerays';
 import { getHexEventId } from '../../src/convert/get-hex';
 import { getSince, getUnixtimeFromDateString, getUntilNow } from '../../src/convert/time';
@@ -15,7 +16,7 @@ import { FilterStrategy, buildFilter } from '../../src/common/filter';
 import { ShareableIdentifier } from '../../src/convert/parse-tlv-hex';
 
 // polyfills
-require('websocket-polyfill');
+(global as any).WebSocket = ws;
 
 export class Nostrobotsread implements INodeType {
 	description: INodeTypeDescription = {

@@ -7,13 +7,14 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { hexToBytes } from '@noble/hashes/utils';
+import ws from 'ws';
+import { finalizeEvent, Relay } from 'nostr-tools';
 import { defaultRelays } from '../../src/constants/rerays';
 import { getHex } from '../../src/convert/get-hex';
 import { oneTimePostToMultiRelay, PostResult } from '../../src/write';
-import { finalizeEvent, Relay } from 'nostr-tools';
 
 // polyfills
-require('websocket-polyfill');
+(global as any).WebSocket = ws;
 
 // Timeout(millisecond).
 const EVENT_POST_TIMEOUT = 10000;

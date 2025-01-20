@@ -52,6 +52,7 @@
     "@types/jest": "^29.5.11",
     "@types/node": "18",
     "@types/request-promise-native": "~1.0.15",
+    "@types/ws": "^8.5.13",
     "@typescript-eslint/parser": "~6.21",
     "eslint": "^8.38.0",
     "eslint-plugin-n8n-nodes-base": "^1.16.3",
@@ -67,6 +68,6 @@
   "dependencies": {
     "bech32": "^2.0.0",
     "nostr-tools": "^2.10.4",
-    "websocket-polyfill": "^0.0.3"
+    "ws": "^8.18.0"
   }
 }

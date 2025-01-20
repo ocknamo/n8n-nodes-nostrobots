@@ -6,12 +6,16 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { Event } from 'nostr-tools';
+import ws from 'ws';
 import { buildFilter, FilterStrategy } from '../../src/common/filter';
 import { getSecFromMsec } from '../../src/convert/time';
 import { TimeLimitedKvStore } from '../../src/common/time-limited-kv-store';
 import { blackListGuard } from '../../src/guards/black-list-guard';
 import { whiteListGuard } from '../../src/guards/white-list-guard';
 import { RateLimitGuard } from '../../src/guards/rate-limit-guard';
+
+// polyfills
+(global as any).WebSocket = ws;
 
 export class NostrobotsEventTrigger implements INodeType {
 	description: INodeTypeDescription = {
