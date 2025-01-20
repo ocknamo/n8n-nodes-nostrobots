@@ -10,8 +10,7 @@ import { hexToBytes } from '@noble/hashes/utils';
 import { defaultRelays } from '../../src/constants/rerays';
 import { getHex } from '../../src/convert/get-hex';
 import { oneTimePostToMultiRelay, PostResult } from '../../src/write';
-import { Relay } from 'type';
-import { finalizeEvent } from 'nostr-tools';
+import { finalizeEvent, Relay } from 'nostr-tools';
 
 // polyfills
 require('websocket-polyfill');

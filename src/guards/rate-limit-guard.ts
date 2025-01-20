@@ -1,4 +1,4 @@
-import { Event } from '../type';
+import { Event } from 'nostr-tools';
 import { TimeLimitedKvStore } from '../common/time-limited-kv-store';
 
 export class RateLimitGuard {

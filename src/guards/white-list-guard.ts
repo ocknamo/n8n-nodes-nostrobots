@@ -1,4 +1,4 @@
-import { Event } from '../type';
+import { Event } from 'nostr-tools';
 import { getHexPubKey } from '../convert/get-hex';
 
 export function whiteListGuard(event: Event, npubs: string[] = []): boolean {

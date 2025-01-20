@@ -1,4 +1,4 @@
-import { Filter } from '../type';
+import { Filter } from 'nostr-tools';
 import { getHexEventId, getHexPubKey } from '../convert/get-hex';
 
 export enum FilterStrategy {

@@ -1,5 +1,4 @@
-import { Event } from './type';
-import { Relay } from 'nostr-tools';
+import { Relay, Event } from 'nostr-tools';
 
 export type PostResult = { result: string; connection?: Relay };
 

@@ -5,7 +5,7 @@ import {
 	ITriggerResponse,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { Event } from 'type';
+import { Event } from 'nostr-tools';
 import { buildFilter, FilterStrategy } from '../../src/common/filter';
 import { getSecFromMsec } from '../../src/convert/time';
 import { TimeLimitedKvStore } from '../../src/common/time-limited-kv-store';

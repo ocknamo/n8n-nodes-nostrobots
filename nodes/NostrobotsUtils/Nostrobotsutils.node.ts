@@ -5,7 +5,7 @@ import {
 	INodeTypeDescription,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { Event } from 'type';
+import { Event } from 'nostr-tools';
 import { hexToBytes } from '@noble/hashes/utils';
 import { defaultRelays } from '../../src/constants/rerays';
 import { getNpubFromNsecOrHexpubkey } from '../../src/convert/get-npub';

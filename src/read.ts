@@ -1,4 +1,4 @@
-import { Filter, Event } from './type';
+import { Filter, Event } from 'nostr-tools';
 
 // Timeout(millisecond).
 const EVENT_FETACH_TIMEOUT = 30000;

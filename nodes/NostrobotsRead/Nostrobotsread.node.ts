@@ -5,11 +5,11 @@ import {
 	INodeTypeDescription,
 	NodeOperationError,
 } from 'n8n-workflow';
+import { Event, Filter } from 'nostr-tools';
 import { defaultRelays } from '../../src/constants/rerays';
 import { getHexEventId } from '../../src/convert/get-hex';
 import { getSince, getUnixtimeFromDateString, getUntilNow } from '../../src/convert/time';
 import { fetchEvents } from '../../src/read';
-import { Event, Filter } from 'type';
 import { isSupportNip50 } from '../../src/common/relay-info';
 import { FilterStrategy, buildFilter } from '../../src/common/filter';
 import { ShareableIdentifier } from '../../src/convert/parse-tlv-hex';
