@@ -5,17 +5,18 @@ import {
 	INodeTypeDescription,
 	NodeOperationError,
 } from 'n8n-workflow';
+import { Event, Filter } from 'nostr-tools';
+import ws from 'ws';
 import { defaultRelays } from '../../src/constants/rerays';
 import { getHexEventId } from '../../src/convert/get-hex';
 import { getSince, getUnixtimeFromDateString, getUntilNow } from '../../src/convert/time';
 import { fetchEvents } from '../../src/read';
-import { Event, Filter } from 'nostr-tools';
 import { isSupportNip50 } from '../../src/common/relay-info';
 import { FilterStrategy, buildFilter } from '../../src/common/filter';
 import { ShareableIdentifier } from '../../src/convert/parse-tlv-hex';
 
 // polyfills
-require('websocket-polyfill');
+(global as any).WebSocket = ws;
 
 export class Nostrobotsread implements INodeType {
 	description: INodeTypeDescription = {
@@ -354,6 +355,6 @@ export class Nostrobotsread implements INodeType {
 		/**
 		 * Map data to n8n data structure
 		 */
-		return [this.helpers.returnJsonArray(res)];
+		return [this.helpers.returnJsonArray(res as Partial<Event>[])];
 	}
 }

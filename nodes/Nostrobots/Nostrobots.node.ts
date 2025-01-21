@@ -6,13 +6,15 @@ import {
 	INodeTypeDescription,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { finishEvent, Relay } from 'nostr-tools';
+import { hexToBytes } from '@noble/hashes/utils';
+import ws from 'ws';
+import { finalizeEvent, Relay } from 'nostr-tools';
 import { defaultRelays } from '../../src/constants/rerays';
 import { getHex } from '../../src/convert/get-hex';
 import { oneTimePostToMultiRelay, PostResult } from '../../src/write';
 
 // polyfills
-require('websocket-polyfill');
+(global as any).WebSocket = ws;
 
 // Timeout(millisecond).
 const EVENT_POST_TIMEOUT = 10000;
@@ -254,13 +256,13 @@ export class Nostrobots implements INodeType {
 		/**
 		 * Get secret key and public key.
 		 */
-		let sk = '';
+		let sk: Uint8Array;
 		if (secKey.startsWith('nsec')) {
 			// Convert to hex
 			// emit 'Ox' and convert lower case.
-			sk = getHex(secKey, 'nsec');
+			sk = hexToBytes(getHex(secKey, 'nsec'));
 		} else {
-			sk = secKey;
+			sk = hexToBytes(secKey);
 		}
 
 		// nostr relay connections for reuse.
@@ -323,7 +325,7 @@ export class Nostrobots implements INodeType {
 				const relayArray = relays.split(',');
 
 				// Sign kind1 Event.
-				const signedEvent = !otherOption && resource !== 'json' ? finishEvent(event, sk) : event;
+				const signedEvent = !otherOption && resource !== 'json' ? finalizeEvent(event, sk) : event;
 
 				// Post event to relay.
 				const postResult: PostResult[] = await oneTimePostToMultiRelay(
@@ -341,8 +343,10 @@ export class Nostrobots implements INodeType {
 		}
 		// close all connection at finally.
 		if (connections) {
-			connections.forEach((c) => {
-				c && c.close();
+			connections.forEach(async (c) => {
+				if (c) {
+					c.close();
+				}
 			});
 		}
 

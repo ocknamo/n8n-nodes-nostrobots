@@ -27,27 +27,27 @@ describe('get-hex', () => {
 	});
 
 	describe('getHexpubkeyfromNpubOrNsecOrHexseckey', () => {
-		it('should get hex pubkey from npub', () => {
-			expect(
+		it('should get hex pubkey from npub', async () => {
+			await expect(
 				getHexpubkeyfromNpubOrNsecOrHexseckey(
 					'npub1tfslfq3v654l64vec6wka30cvwrmyxh0ushk7yvg9a0u6q9uvqrqgy4g92',
 				),
-			).toBe('5a61f4822cd52bfd5599c69d6ec5f86387b21aefe42f6f11882f5fcd00bc6006');
+			).resolves.toBe('5a61f4822cd52bfd5599c69d6ec5f86387b21aefe42f6f11882f5fcd00bc6006');
 		});
-		it('should get hex pubkey from nsec', () => {
+		it('should get hex pubkey from nsec', async () => {
 			// DONT USE THIS NSEC ANYTHING BUT TEST.
-			expect(
+			await expect(
 				getHexpubkeyfromNpubOrNsecOrHexseckey(
 					'nsec1t36eq3qq30uerv4q2l8r6yfsd9vc6anw52w4drggqwppum350eks8q4w7p',
 				),
-			).toBe('5a61f4822cd52bfd5599c69d6ec5f86387b21aefe42f6f11882f5fcd00bc6006');
+			).resolves.toBe('5a61f4822cd52bfd5599c69d6ec5f86387b21aefe42f6f11882f5fcd00bc6006');
 		});
-		it('should get hex pubkey from hexseckey', () => {
-			expect(
+		it('should get hex pubkey from hexseckey', async () => {
+			await expect(
 				getHexpubkeyfromNpubOrNsecOrHexseckey(
 					'5c759044008bf991b2a057ce3d113069598d766ea29d568d0803821e6e347e6d',
 				),
-			).toBe('5a61f4822cd52bfd5599c69d6ec5f86387b21aefe42f6f11882f5fcd00bc6006');
+			).resolves.toBe('5a61f4822cd52bfd5599c69d6ec5f86387b21aefe42f6f11882f5fcd00bc6006');
 		});
 	});
 });

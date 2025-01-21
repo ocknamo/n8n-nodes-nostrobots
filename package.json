@@ -16,7 +16,7 @@
     "url": "https://github.com/ocknamo/n8n-nodes-nostrobots.git"
   },
   "engines": {
-    "node": "<=18.15.0",
+    "node": "<=20.15.0",
     "yarn": "~1.22.5"
   },
   "main": "index.js",
@@ -52,9 +52,10 @@
     "@types/jest": "^29.5.11",
     "@types/node": "18",
     "@types/request-promise-native": "~1.0.15",
-    "@typescript-eslint/parser": "~5.45",
+    "@types/ws": "^8.5.13",
+    "@typescript-eslint/parser": "~6.21",
     "eslint": "^8.38.0",
-    "eslint-plugin-n8n-nodes-base": "^1.11.0",
+    "eslint-plugin-n8n-nodes-base": "^1.16.3",
     "gulp": "^4.0.2",
     "jest": "^29.7.0",
     "n8n-core": "*",
@@ -62,11 +63,11 @@
     "prettier": "^2.7.1",
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
-    "typescript": "~4.8.4"
+    "typescript": "~5.3.3"
   },
   "dependencies": {
     "bech32": "^2.0.0",
-    "nostr-tools": "~1.10.0",
-    "websocket-polyfill": "^0.0.3"
+    "nostr-tools": "^2.10.4",
+    "ws": "^8.18.0"
   }
 }

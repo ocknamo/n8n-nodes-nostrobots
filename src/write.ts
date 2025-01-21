@@ -1,4 +1,4 @@
-import { Event, Relay, relayInit } from 'nostr-tools';
+import { Relay, Event } from 'nostr-tools';
 
 export type PostResult = { result: string; connection?: Relay };
 
@@ -29,76 +29,37 @@ export async function oneTimePost(
 		/**
 		 * set connection
 		 */
-		relay = relayInit(relayUri);
-		const connectionPromise: Promise<string> = new Promise((resolve, reject) => {
-			relay.on('connect', () => {
-				console.log(`connected to ${relay.url}`);
-				resolve(`[success to connect]: ${relay.url}`);
-			});
-			relay.on('error', () => {
-				console.log(`failed to connect to ${relay.url}`);
-				reject(`[failed to connect]: ${relay.url}`);
-			});
+		relay = new Relay(relayUri);
+		relay.connectionTimeout = timeoutMs;
 
-			timeout = setTimeout(() => {
-				relay.close();
-				reject(`[timeout]: ${relay.url}`);
-			}, timeoutMs);
-		});
-
-		relay.connect().catch((r) => {
-			const reason = r ? `[${r}]: ${relay.url}` : `[failed to connect]: ${relay.url}`;
-
-			return { reason, connection: undefined };
-		});
-
-		await connectionPromise.catch((r) => {
-			return { r, connection: undefined };
-		});
+		try {
+			await relay.connect();
+		} catch (e) {
+			console.log(`failed to connect to ${relayUri}`, e);
+			if (typeof e === 'string') {
+				return { result: `[${e}]: ${relayUri}`, connection: undefined };
+			} else {
+				return { result: `[failed to connect]: ${relayUri}`, connection: undefined };
+			}
+		}
 	}
-
-	/**
-	 * Initial value.
-	 */
-	let result: string = `[init]: ${relay.url}`;
 
 	/**
 	 * Publish event.
 	 */
-	let pub = relay.publish(event);
-	let timeout: NodeJS.Timeout | null = null;
-	const publishPromise: Promise<string> = new Promise((resolve, reject) => {
-		pub.on('ok', () => {
-			console.log(`${relay.url} has accepted our event`);
-			resolve(`[accepted]: ${relay.url}`);
-		});
-		pub.on('failed', (reason: any) => {
-			console.warn(`failed to publish to ${relay.url}: ${reason}`);
-			reject(`[failed]: ${relay.url}`);
-		});
+	relay.publishTimeout = timeoutMs;
 
-		timeout = setTimeout(() => {
-			relay.close();
-			reject(`[timeout]: ${relay.url}`);
-		}, timeoutMs);
-	});
-
-	/**
-	 * Get result.
-	 */
-	let resultRelay = undefined;
-	await publishPromise
-		.then((r) => {
-			result = r;
-			resultRelay = relay;
-		})
-		.catch((r) => {
-			result = r;
-		});
-
-	if (!!timeout) {
-		clearTimeout(timeout);
+	try {
+		await relay.publish(event);
+		console.log(`${relay.url} has accepted our event`);
+	} catch (e) {
+		console.log(`failed to publish to ${relayUri}`, e);
+		if (typeof e === 'string') {
+			return { result: `[${e}]: ${relayUri}`, connection: undefined };
+		} else {
+			return { result: `[failed]: ${relayUri}`, connection: undefined };
+		}
 	}
 
-	return { result, connection: resultRelay };
+	return { result: `[accepted]: ${relayUri}`, connection: relay };
 }
