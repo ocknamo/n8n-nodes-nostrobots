@@ -3,13 +3,16 @@
   "version": "1.0.2",
   "description": "n8n node to create nostr activities",
   "keywords": [
-    "n8n-community-node-package"
+    "n8n-community-node-package",
+    "nostr",
+    "n8n",
+    "bot"
   ],
   "license": "MIT",
-  "homepage": "https://n8n.io",
+  "homepage": "https://github.com/ocknamo/n8n-nodes-nostrobots",
   "author": {
     "name": "ocknamo",
-    "email": "ocknamo@gmail.com"
+    "npub": "npub1y6aja0kkc4fdvuxgqjcdv4fx0v7xv2epuqnddey2eyaxquznp9vq0tp75l"
   },
   "repository": {
     "type": "git",
