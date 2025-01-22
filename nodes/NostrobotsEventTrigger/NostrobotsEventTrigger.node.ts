@@ -4,8 +4,9 @@ import {
 	ITriggerFunctions,
 	ITriggerResponse,
 	NodeOperationError,
+	sleep,
 } from 'n8n-workflow';
-import { Event } from 'nostr-tools';
+import { Event, Filter, SimplePool } from 'nostr-tools';
 import ws from 'ws';
 import { buildFilter, FilterStrategy } from '../../src/common/filter';
 import { getSecFromMsec } from '../../src/convert/time';
@@ -13,6 +14,7 @@ import { TimeLimitedKvStore } from '../../src/common/time-limited-kv-store';
 import { blackListGuard } from '../../src/guards/black-list-guard';
 import { whiteListGuard } from '../../src/guards/white-list-guard';
 import { RateLimitGuard } from '../../src/guards/rate-limit-guard';
+import { type SubscribeManyParams } from 'nostr-tools/lib/types/pool';
 
 // polyfills
 (global as any).WebSocket = ws;
@@ -162,11 +164,10 @@ export class NostrobotsEventTrigger implements INodeType {
 			throw new NodeOperationError(this.getNode(), 'Invalid strategy.');
 		}
 
-		const SimplePool = (await import('nostr-tools')).SimplePool;
-		const pool = new SimplePool();
+		let pool = new SimplePool();
 
-		const relays = [relay1, relay2];
-		const filter = buildFilter(
+		const relays = relay2 ? [relay1, relay2] : [relay1];
+		let filter = buildFilter(
 			FilterStrategy.mention,
 			{ mention: publickey },
 			getSecFromMsec(Date.now()),
@@ -174,6 +175,7 @@ export class NostrobotsEventTrigger implements INodeType {
 
 		const eventIdStore = new TimeLimitedKvStore<number>();
 		const oneMin = 1 * 60 * 1000;
+		const tenMin = 10 * oneMin;
 
 		const rateGuard = new RateLimitGuard(
 			ratelimitingCountForAll,
@@ -182,7 +184,9 @@ export class NostrobotsEventTrigger implements INodeType {
 			duration,
 		);
 
-		pool.subscribeMany(relays, [filter], {
+		let recconctionCount = 0;
+
+		const subscribeParams = {
 			onevent: (event: Event) => {
 				if (!blackListGuard(event, blackList)) {
 					return;
@@ -205,12 +209,64 @@ export class NostrobotsEventTrigger implements INodeType {
 				this.emit([this.helpers.returnJsonArray(event as Record<string, any>)]);
 				eventIdStore.set(event.id, 1, Date.now() + oneMin);
 			},
-			onclose: (reasons: string[]) => {
-				// TODO: pool reconnection when closed connection.
+			onclose: async (reasons: string[]) => {
 				console.log('closed: ', reasons);
+
+				if (recconctionCount > 10) {
+					throw new NodeOperationError(this.getNode(), 'Ralay closed frequency.');
+				}
+
+				console.log('try reconnection');
+
+				filter = buildFilter(
+					FilterStrategy.mention,
+					{ mention: publickey },
+					getSecFromMsec(Date.now()),
+				);
+
+				await sleep(recconctionCount ** 2 * 1000);
+				recconctionCount++;
+				pool.destroy();
+
+				filter = buildFilter(
+					FilterStrategy.mention,
+					{ mention: publickey },
+					getSecFromMsec(Date.now()),
+				);
+				subscribeEvents(pool, filter, relays, subscribeParams);
 			},
-		});
+		};
+
+		subscribeEvents(pool, filter, relays, subscribeParams);
+
+		// Health check (per 10min)
+		setInterval(() => {
+			const statuses = pool.listConnectionStatus();
+			const statusesArr = Array.from(statuses.values());
+			if (statusesArr.every((st) => !st)) {
+				pool.destroy();
+
+				filter = buildFilter(
+					FilterStrategy.mention,
+					{ mention: publickey },
+					getSecFromMsec(Date.now()),
+				);
+				subscribeEvents(pool, filter, relays, subscribeParams);
+			} else {
+				// reset
+				recconctionCount = 0;
+			}
+		}, tenMin);
 
 		return {};
 	}
+}
+
+function subscribeEvents(
+	pool: SimplePool,
+	filter: Filter,
+	relays: string[],
+	subscribeParams: SubscribeManyParams,
+): void {
+	pool.subscribeMany(relays, [filter], subscribeParams);
 }
