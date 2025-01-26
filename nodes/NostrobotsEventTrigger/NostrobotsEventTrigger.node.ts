@@ -6,7 +6,7 @@ import {
 	NodeOperationError,
 	sleep,
 } from 'n8n-workflow';
-import { Event, Filter, SimplePool } from 'nostr-tools';
+import { Event, Filter, SimplePool, verifyEvent } from 'nostr-tools';
 import ws from 'ws';
 import { buildFilter, FilterStrategy } from '../../src/common/filter';
 import { getSecFromMsec } from '../../src/convert/time';
@@ -168,14 +168,14 @@ export class NostrobotsEventTrigger implements INodeType {
 
 		const relays = relay2 ? [relay1, relay2] : [relay1];
 		let filter = buildFilter(
-			FilterStrategy.mention,
+			strategy as FilterStrategy,
 			{ mention: publickey },
 			getSecFromMsec(Date.now()),
 		);
 
 		const eventIdStore = new TimeLimitedKvStore<number>();
 		const oneMin = 1 * 60 * 1000;
-		const tenMin = 10 * oneMin;
+		const tenMin = oneMin; // FIXME: FOR DEBUG
 
 		const rateGuard = new RateLimitGuard(
 			ratelimitingCountForAll,
@@ -201,6 +201,11 @@ export class NostrobotsEventTrigger implements INodeType {
 					return;
 				}
 
+				// verify event
+				if (!verifyEvent(event)) {
+					return;
+				}
+
 				// rate limit guard
 				if (!rateGuard.canActivate(event)) {
 					return;
@@ -219,7 +224,7 @@ export class NostrobotsEventTrigger implements INodeType {
 				console.log('try reconnection');
 
 				filter = buildFilter(
-					FilterStrategy.mention,
+					strategy as FilterStrategy,
 					{ mention: publickey },
 					getSecFromMsec(Date.now()),
 				);
@@ -241,13 +246,16 @@ export class NostrobotsEventTrigger implements INodeType {
 
 		// Health check (per 10min)
 		setInterval(() => {
+			// FIXME: これは状態を見ているだけでヘルスチェックになっていない
+			// 実際にFilterを発行してイベントを受け取る必要がある
 			const statuses = pool.listConnectionStatus();
 			const statusesArr = Array.from(statuses.values());
 			if (statusesArr.every((st) => !st)) {
+				console.log('All relays are not healthy. Try reconnection');
 				pool.destroy();
 
 				filter = buildFilter(
-					FilterStrategy.mention,
+					strategy as FilterStrategy,
 					{ mention: publickey },
 					getSecFromMsec(Date.now()),
 				);
