@@ -15,6 +15,7 @@ import { blackListGuard } from '../../src/guards/black-list-guard';
 import { whiteListGuard } from '../../src/guards/white-list-guard';
 import { RateLimitGuard } from '../../src/guards/rate-limit-guard';
 import { type SubscribeManyParams } from 'nostr-tools/lib/types/pool';
+import { log } from '../../src/common/log';
 
 // polyfills
 (global as any).WebSocket = ws;
@@ -175,7 +176,8 @@ export class NostrobotsEventTrigger implements INodeType {
 
 		const eventIdStore = new TimeLimitedKvStore<number>();
 		const oneMin = 1 * 60 * 1000;
-		const tenMin = oneMin; // FIXME: FOR DEBUG
+		const fiveMin = 5 * oneMin;
+		const tenMin = 10 * oneMin;
 
 		const rateGuard = new RateLimitGuard(
 			ratelimitingCountForAll,
@@ -212,31 +214,32 @@ export class NostrobotsEventTrigger implements INodeType {
 				}
 
 				this.emit([this.helpers.returnJsonArray(event as Record<string, any>)]);
-				eventIdStore.set(event.id, 1, Date.now() + oneMin);
+				eventIdStore.set(event.id, 1, Date.now() + fiveMin);
 			},
 			onclose: async (reasons: string[]) => {
-				console.log('closed: ', reasons);
+				log('closed: ', reasons);
 
 				if (recconctionCount > 10) {
 					throw new NodeOperationError(this.getNode(), 'Ralay closed frequency.');
 				}
 
-				console.log('try reconnection');
+				log('try reconnection');
 
+				pool.destroy();
 				filter = buildFilter(
 					strategy as FilterStrategy,
 					{ mention: publickey },
 					getSecFromMsec(Date.now()),
 				);
 
-				await sleep(recconctionCount ** 2 * 1000);
+				await sleep((recconctionCount + 1) ** 2 * 1000);
 				recconctionCount++;
-				pool.destroy();
 
 				filter = buildFilter(
 					FilterStrategy.mention,
 					{ mention: publickey },
-					getSecFromMsec(Date.now()),
+					// Events before five min are checked duplicate.
+					getSecFromMsec(Date.now() - oneMin),
 				);
 				subscribeEvents(pool, filter, relays, subscribeParams);
 			},
@@ -245,19 +248,24 @@ export class NostrobotsEventTrigger implements INodeType {
 		subscribeEvents(pool, filter, relays, subscribeParams);
 
 		// Health check (per 10min)
-		setInterval(() => {
-			// FIXME: これは状態を見ているだけでヘルスチェックになっていない
-			// 実際にFilterを発行してイベントを受け取る必要がある
-			const statuses = pool.listConnectionStatus();
-			const statusesArr = Array.from(statuses.values());
-			if (statusesArr.every((st) => !st)) {
-				console.log('All relays are not healthy. Try reconnection');
+		setInterval(async () => {
+			const status = await new Promise<boolean>((resolve) => {
+				// timeout
+				sleep(10000).then(() => resolve(false));
+				pool.subscribeMany(relays, [{ limit: 1, since: Date.now() }], {
+					maxWait: 10,
+					onevent: () => resolve(true),
+					onclose: () => resolve(false),
+				});
+			});
+			if (!status) {
+				log('All relays are not healthy. Try reconnection');
 				pool.destroy();
 
 				filter = buildFilter(
 					strategy as FilterStrategy,
 					{ mention: publickey },
-					getSecFromMsec(Date.now()),
+					getSecFromMsec(Date.now() - oneMin),
 				);
 				subscribeEvents(pool, filter, relays, subscribeParams);
 			} else {
