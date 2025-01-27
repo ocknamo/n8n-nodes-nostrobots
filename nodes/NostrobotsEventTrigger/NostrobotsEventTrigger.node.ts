@@ -4,8 +4,9 @@ import {
 	ITriggerFunctions,
 	ITriggerResponse,
 	NodeOperationError,
+	sleep,
 } from 'n8n-workflow';
-import { Event } from 'nostr-tools';
+import { Event, Filter, SimplePool, verifyEvent } from 'nostr-tools';
 import ws from 'ws';
 import { buildFilter, FilterStrategy } from '../../src/common/filter';
 import { getSecFromMsec } from '../../src/convert/time';
@@ -13,6 +14,8 @@ import { TimeLimitedKvStore } from '../../src/common/time-limited-kv-store';
 import { blackListGuard } from '../../src/guards/black-list-guard';
 import { whiteListGuard } from '../../src/guards/white-list-guard';
 import { RateLimitGuard } from '../../src/guards/rate-limit-guard';
+import { type SubscribeManyParams } from 'nostr-tools/lib/types/pool';
+import { log } from '../../src/common/log';
 
 // polyfills
 (global as any).WebSocket = ws;
@@ -162,18 +165,19 @@ export class NostrobotsEventTrigger implements INodeType {
 			throw new NodeOperationError(this.getNode(), 'Invalid strategy.');
 		}
 
-		const SimplePool = (await import('nostr-tools')).SimplePool;
-		const pool = new SimplePool();
+		let pool = new SimplePool();
 
-		const relays = [relay1, relay2];
-		const filter = buildFilter(
-			FilterStrategy.mention,
+		const relays = relay2 ? [relay1, relay2] : [relay1];
+		let filter = buildFilter(
+			strategy as FilterStrategy,
 			{ mention: publickey },
 			getSecFromMsec(Date.now()),
 		);
 
 		const eventIdStore = new TimeLimitedKvStore<number>();
 		const oneMin = 1 * 60 * 1000;
+		const fiveMin = 5 * oneMin;
+		const tenMin = 10 * oneMin;
 
 		const rateGuard = new RateLimitGuard(
 			ratelimitingCountForAll,
@@ -182,7 +186,9 @@ export class NostrobotsEventTrigger implements INodeType {
 			duration,
 		);
 
-		pool.subscribeMany(relays, [filter], {
+		let recconctionCount = 0;
+
+		const subscribeParams = {
 			onevent: (event: Event) => {
 				if (!blackListGuard(event, blackList)) {
 					return;
@@ -202,15 +208,81 @@ export class NostrobotsEventTrigger implements INodeType {
 					return;
 				}
 
+				// verify event
+				if (!verifyEvent(event)) {
+					return;
+				}
+
 				this.emit([this.helpers.returnJsonArray(event as Record<string, any>)]);
-				eventIdStore.set(event.id, 1, Date.now() + oneMin);
+				eventIdStore.set(event.id, 1, Date.now() + fiveMin);
 			},
-			onclose: (reasons: string[]) => {
-				// TODO: pool reconnection when closed connection.
-				console.log('closed: ', reasons);
+			onclose: async (reasons: string[]) => {
+				log('closed: ', reasons);
+
+				if (recconctionCount > 10) {
+					throw new NodeOperationError(this.getNode(), 'Ralay closed frequency.');
+				}
+
+				log('try reconnection');
+
+				pool.destroy();
+				filter = buildFilter(
+					strategy as FilterStrategy,
+					{ mention: publickey },
+					getSecFromMsec(Date.now()),
+				);
+
+				await sleep((recconctionCount + 1) ** 2 * 1000);
+				recconctionCount++;
+
+				filter = buildFilter(
+					FilterStrategy.mention,
+					{ mention: publickey },
+					// Events before five min are checked duplicate.
+					getSecFromMsec(Date.now() - oneMin),
+				);
+				subscribeEvents(pool, filter, relays, subscribeParams);
 			},
-		});
+		};
+
+		subscribeEvents(pool, filter, relays, subscribeParams);
+
+		// Health check (per 10min)
+		setInterval(async () => {
+			const status = await new Promise<boolean>((resolve) => {
+				// timeout
+				sleep(10000).then(() => resolve(false));
+				pool.subscribeMany(relays, [{ limit: 1, since: Date.now() }], {
+					maxWait: 10,
+					onevent: () => resolve(true),
+					onclose: () => resolve(false),
+				});
+			});
+			if (!status) {
+				log('All relays are not healthy. Try reconnection');
+				pool.destroy();
+
+				filter = buildFilter(
+					strategy as FilterStrategy,
+					{ mention: publickey },
+					getSecFromMsec(Date.now() - oneMin),
+				);
+				subscribeEvents(pool, filter, relays, subscribeParams);
+			} else {
+				// reset
+				recconctionCount = 0;
+			}
+		}, tenMin);
 
 		return {};
 	}
+}
+
+function subscribeEvents(
+	pool: SimplePool,
+	filter: Filter,
+	relays: string[],
+	subscribeParams: SubscribeManyParams,
+): void {
+	pool.subscribeMany(relays, [filter], subscribeParams);
 }

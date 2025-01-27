@@ -1,3 +1,4 @@
+import { log } from '../src/common/log';
 import { Relay, Event } from 'nostr-tools';
 
 export type PostResult = { result: string; connection?: Relay };
@@ -35,7 +36,7 @@ export async function oneTimePost(
 		try {
 			await relay.connect();
 		} catch (e) {
-			console.log(`failed to connect to ${relayUri}`, e);
+			log(`failed to connect to ${relayUri}`, e);
 			if (typeof e === 'string') {
 				return { result: `[${e}]: ${relayUri}`, connection: undefined };
 			} else {
@@ -51,9 +52,9 @@ export async function oneTimePost(
 
 	try {
 		await relay.publish(event);
-		console.log(`${relay.url} has accepted our event`);
+		log(`${relay.url} has accepted our event`);
 	} catch (e) {
-		console.log(`failed to publish to ${relayUri}`, e);
+		log(`failed to publish to ${relayUri}`, e);
 		if (typeof e === 'string') {
 			return { result: `[${e}]: ${relayUri}`, connection: undefined };
 		} else {
