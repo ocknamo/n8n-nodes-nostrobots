@@ -203,13 +203,13 @@ export class NostrobotsEventTrigger implements INodeType {
 					return;
 				}
 
-				// verify event
-				if (!verifyEvent(event)) {
+				// rate limit guard
+				if (!rateGuard.canActivate(event)) {
 					return;
 				}
 
-				// rate limit guard
-				if (!rateGuard.canActivate(event)) {
+				// verify event
+				if (!verifyEvent(event)) {
 					return;
 				}
 
