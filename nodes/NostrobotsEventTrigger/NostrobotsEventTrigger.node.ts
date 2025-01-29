@@ -20,6 +20,8 @@ import { log } from '../../src/common/log';
 // polyfills
 (global as any).WebSocket = ws;
 
+let pool: SimplePool;
+
 export class NostrobotsEventTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Nostr Trigger',
@@ -165,14 +167,14 @@ export class NostrobotsEventTrigger implements INodeType {
 			throw new NodeOperationError(this.getNode(), 'Invalid strategy.');
 		}
 
-		let pool = new SimplePool();
-
 		const relays = relay2 ? [relay1, relay2] : [relay1];
 		let filter = buildFilter(
 			strategy as FilterStrategy,
 			{ mention: publickey },
 			getSecFromMsec(Date.now()),
 		);
+
+		pool = initPool(pool);
 
 		const eventIdStore = new TimeLimitedKvStore<number>();
 		const oneMin = 1 * 60 * 1000;
@@ -218,6 +220,12 @@ export class NostrobotsEventTrigger implements INodeType {
 			},
 			onclose: async (reasons: string[]) => {
 				log('closed: ', reasons);
+
+				const selfClosedReason = 'relay connection closed by us';
+
+				if (reasons.every((r) => r === selfClosedReason)) {
+					return;
+				}
 
 				if (recconctionCount > 10) {
 					throw new NodeOperationError(this.getNode(), 'Ralay closed frequency.');
@@ -285,4 +293,13 @@ function subscribeEvents(
 	subscribeParams: SubscribeManyParams,
 ): void {
 	pool.subscribeMany(relays, [filter], subscribeParams);
+}
+
+function initPool(pool: SimplePool | null): SimplePool {
+	if (!pool) {
+		return new SimplePool();
+	}
+
+	pool.destroy();
+	return new SimplePool();
 }
