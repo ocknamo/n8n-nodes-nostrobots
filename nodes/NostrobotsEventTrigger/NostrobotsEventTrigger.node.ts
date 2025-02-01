@@ -234,11 +234,6 @@ export class NostrobotsEventTrigger implements INodeType {
 				log('try reconnection');
 
 				pool.destroy();
-				filter = buildFilter(
-					strategy as FilterStrategy,
-					{ mention: publickey },
-					getSecFromMsec(Date.now()),
-				);
 
 				await sleep((recconctionCount + 1) ** 2 * 1000);
 				recconctionCount++;
