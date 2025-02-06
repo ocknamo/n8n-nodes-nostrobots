@@ -20,8 +20,6 @@ import { log } from '../../src/common/log';
 // polyfills
 (global as any).WebSocket = ws;
 
-let pool: SimplePool;
-
 export class NostrobotsEventTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Nostr Trigger',
@@ -149,6 +147,9 @@ export class NostrobotsEventTrigger implements INodeType {
 	};
 
 	async trigger(this: ITriggerFunctions): Promise<ITriggerResponse> {
+		let closeFunctionWasCalled = false;
+		let pool = new SimplePool();
+
 		const strategy = this.getNodeParameter('strategy', 0) as string;
 		const relay1 = this.getNodeParameter('relay1', 0) as string;
 		const relay2 = this.getNodeParameter('relay2', 0) as string;
@@ -173,8 +174,6 @@ export class NostrobotsEventTrigger implements INodeType {
 			{ mention: publickey },
 			getSecFromMsec(Date.now()),
 		);
-
-		pool = initPool(pool);
 
 		const eventIdStore = new TimeLimitedKvStore<number>();
 		const oneMin = 1 * 60 * 1000;
@@ -220,6 +219,9 @@ export class NostrobotsEventTrigger implements INodeType {
 			},
 			onclose: async (reasons: string[]) => {
 				log('closed: ', reasons);
+				if (closeFunctionWasCalled) {
+					return;
+				}
 
 				const selfClosedReason = 'relay connection closed by us';
 
@@ -251,7 +253,11 @@ export class NostrobotsEventTrigger implements INodeType {
 		subscribeEvents(pool, filter, relays, subscribeParams);
 
 		// Health check (per 10min)
-		setInterval(async () => {
+		const healthCheckInterval = setInterval(async () => {
+			if (closeFunctionWasCalled) {
+				return;
+			}
+
 			const status = await new Promise<boolean>((resolve) => {
 				// timeout
 				sleep(10000).then(() => resolve(false));
@@ -277,7 +283,13 @@ export class NostrobotsEventTrigger implements INodeType {
 			}
 		}, tenMin);
 
-		return {};
+		const closeFunction = async () => {
+			closeFunctionWasCalled = true;
+			clearInterval(healthCheckInterval);
+			pool.destroy();
+		};
+
+		return { closeFunction };
 	}
 }
 
@@ -288,13 +300,4 @@ function subscribeEvents(
 	subscribeParams: SubscribeManyParams,
 ): void {
 	pool.subscribeMany(relays, [filter], subscribeParams);
-}
-
-function initPool(pool: SimplePool | null): SimplePool {
-	if (!pool) {
-		return new SimplePool();
-	}
-
-	pool.destroy();
-	return new SimplePool();
 }
