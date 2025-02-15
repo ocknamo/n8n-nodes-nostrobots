@@ -170,7 +170,7 @@ export class NostrobotsEventTrigger implements INodeType {
 		const relay1 = this.getNodeParameter('relay1', 0) as string;
 		const relay2 = this.getNodeParameter('relay2', 0) as string;
 
-		// Fot mention params
+		// For mention params
 		const publickey = this.getNodeParameter('publickey', 0) as string;
 		const kindNum = this.getNodeParameter('kind', 0) as number;
 
