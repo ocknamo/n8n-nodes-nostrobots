@@ -40,6 +40,20 @@ describe('filter.ts', () => {
 			expect(getHex.getHexPubKey).toHaveBeenCalledWith(info.mention);
 		});
 
+		it('should build mention filter with custom kinds', () => {
+			jest.spyOn(getHex, 'getHexPubKey').mockReturnValueOnce('12345678901234567890');
+			const info = { mention: 'npubyyyyyyyyyyyyyyyyyyyy' };
+
+			expect(buildFilter(FilterStrategy.mention, info, 10000, 90000, [1, 7])).toEqual({
+				kinds: [1, 7],
+				'#p': ['12345678901234567890'],
+				since: 10000,
+				until: 90000,
+			});
+
+			expect(getHex.getHexPubKey).toHaveBeenCalledWith(info.mention);
+		});
+
 		it('should build raw filter.', () => {
 			const info = { rawFilter: '{ "kinds": [1],  "#t": ["foodstr"]}' };
 

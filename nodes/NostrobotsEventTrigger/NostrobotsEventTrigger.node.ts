@@ -67,6 +67,21 @@ export class NostrobotsEventTrigger implements INodeType {
 				description: 'Public key of target of mention. npub or HEX.',
 			},
 			{
+				displayName: 'Kind',
+				name: 'kind',
+				type: 'number',
+				default: 1,
+				placeholder: '1',
+				noDataExpression: true,
+				required: true,
+				displayOptions: {
+					show: {
+						strategy: ['mention'],
+					},
+				},
+				description: 'Kind number of target Event. Usually set to 1.',
+			},
+			{
 				displayName: 'Relay1',
 				name: 'relay1',
 				type: 'string',
@@ -150,10 +165,14 @@ export class NostrobotsEventTrigger implements INodeType {
 		let closeFunctionWasCalled = false;
 		let pool = new SimplePool();
 
+		// Common params
 		const strategy = this.getNodeParameter('strategy', 0) as string;
 		const relay1 = this.getNodeParameter('relay1', 0) as string;
 		const relay2 = this.getNodeParameter('relay2', 0) as string;
+
+		// Fot mention params
 		const publickey = this.getNodeParameter('publickey', 0) as string;
+		const kindNum = this.getNodeParameter('kind', 0) as number;
 
 		const ratelimitingCountForAll = this.getNodeParameter('ratelimitingCountForAll', 0) as number;
 		const ratelimitingCountForOne = this.getNodeParameter('ratelimitingCountForOne', 0) as number;
@@ -173,6 +192,8 @@ export class NostrobotsEventTrigger implements INodeType {
 			strategy as FilterStrategy,
 			{ mention: publickey },
 			getSecFromMsec(Date.now()),
+			undefined,
+			[kindNum],
 		);
 
 		const eventIdStore = new TimeLimitedKvStore<number>();

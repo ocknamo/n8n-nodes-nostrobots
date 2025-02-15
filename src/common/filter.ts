@@ -15,6 +15,7 @@ export function buildFilter(
 	info: Partial<Record<FilterStrategy, string | undefined>>,
 	since?: number,
 	until?: number,
+	kinds = [1],
 ): Filter {
 	let filter = {};
 
@@ -29,7 +30,7 @@ export function buildFilter(
 			const pubkey = getHexPubKey(specificData);
 
 			filter = {
-				kinds: [1],
+				kinds,
 				authors: [pubkey],
 				since,
 				until,
@@ -49,7 +50,7 @@ export function buildFilter(
 			const searchWord = specificData;
 
 			filter = {
-				kinds: [1],
+				kinds,
 				search: searchWord,
 				since,
 				until,
@@ -62,7 +63,7 @@ export function buildFilter(
 			tagString = tagString.replace('#', '');
 
 			filter = {
-				kinds: [1],
+				kinds,
 				'#t': [tagString],
 				since,
 				until,
@@ -89,7 +90,7 @@ export function buildFilter(
 			const mentionedpubkey = getHexPubKey(specificData);
 
 			filter = {
-				kinds: [1],
+				kinds,
 				'#p': [mentionedpubkey],
 				since,
 				until,
