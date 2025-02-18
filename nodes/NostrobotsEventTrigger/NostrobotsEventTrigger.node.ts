@@ -282,7 +282,7 @@ export class NostrobotsEventTrigger implements INodeType {
 			const status = await new Promise<boolean>((resolve) => {
 				// timeout
 				sleep(10000).then(() => resolve(false));
-				pool.subscribeMany(relays, [{ limit: 1, since: Date.now() }], {
+				pool.subscribeMany(relays, [{ limit: 1 }], {
 					maxWait: 10,
 					onevent: () => resolve(true),
 					onclose: () => resolve(false),
