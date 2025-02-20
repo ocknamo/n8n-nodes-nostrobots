@@ -1,4 +1,4 @@
-import { Filter, Event, matchFilters, matchFilter } from 'nostr-tools';
+import { Filter, Event, matchFilter } from 'nostr-tools';
 
 // Timeout(millisecond).
 const EVENT_FETACH_TIMEOUT = 30000;
