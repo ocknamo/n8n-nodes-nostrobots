@@ -36,7 +36,7 @@ n8n コミュニティ ノードのドキュメントの [インストール ガ
   - イベントの購読をトリガーにn8nのワークフローを開始する
   - 特定のnpubに対するメンションによるワークフローのトリガー
   - 実行頻度の制限機能（全体、イベント作成者ごとに設定）
-- Nostr Utils
+- [Nostr Utils](./doc/utils-ja.md)
   - イベントからnaddr, neventへの変換(ConvertEvent)
   - bech32、16進数表現の鍵を相互に変換する(TransformKeys)
 

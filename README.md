@@ -32,10 +32,10 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 - [Nostr Read](./doc/read.md)
   - Fetch kind1 events
     - Query by eventId, public key, search word(NIP-50), hashtag, mention, and json filter 
-- Nostr Utils
+- [Nostr Utils](./doc/utils.md)
   - Conversion from event to naddr, nevent
   - Transform bech32, hex representation of keys to each other
-- [BETA] Nostr Trigger
+- [BETA] [Nostr Trigger](./doc/trigger.md)
   - Trigger n8n workflow by subscribing to events
   - Triggering workflows by mentions to specific npubs
   - Ability to limit execution frequency (per all, per event creator)
