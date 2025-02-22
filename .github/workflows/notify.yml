@@ -5,6 +5,8 @@ on:
     types:
       - closed
       - opened
+    branches-ignore:
+      - version
   issues:
     types:
       - opened
