@@ -6,7 +6,7 @@ import {
 	NodeOperationError,
 	sleep,
 } from 'n8n-workflow';
-import { Event, Filter, SimplePool, verifyEvent } from 'nostr-tools';
+import { Event, Filter, matchFilter, SimplePool, verifyEvent } from 'nostr-tools';
 import ws from 'ws';
 import { buildFilter, FilterStrategy } from '../../src/common/filter';
 import { getSecFromMsec } from '../../src/convert/time';
@@ -212,6 +212,10 @@ export class NostrobotsEventTrigger implements INodeType {
 
 		const subscribeParams = {
 			onevent: (event: Event) => {
+				if (!matchFilter(filter, event)) {
+					return;
+				}
+
 				if (!blackListGuard(event, blackList)) {
 					return;
 				}
