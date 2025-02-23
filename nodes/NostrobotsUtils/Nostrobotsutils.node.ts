@@ -82,6 +82,7 @@ export class Nostrobotsutils implements INodeType {
 				required: true,
 				displayOptions: {
 					show: {
+						operation: ['convertEvent'],
 						convertOutput: ['naddr', 'nevent'],
 					},
 				},
@@ -95,6 +96,7 @@ export class Nostrobotsutils implements INodeType {
 				type: 'string',
 				displayOptions: {
 					show: {
+						operation: ['convertEvent'],
 						convertOutput: ['naddr', 'nevent'],
 					},
 				},
