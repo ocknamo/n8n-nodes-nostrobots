@@ -88,7 +88,7 @@ export class NostrobotsEventTrigger implements INodeType {
 				default: false,
 				noDataExpression: true,
 				required: true,
-				description: 'If set to ture, events in threads are also included in the scope.',
+				description: 'Whether events in threads are also included in the scope',
 			},
 			{
 				displayName: 'Relay1',
@@ -226,7 +226,7 @@ export class NostrobotsEventTrigger implements INodeType {
 					return;
 				}
 
-				if(!threads && event.tags.some(t => t[0] === 'e')) {
+				if (!threads && event.tags.some((t) => t[0] === 'e')) {
 					return;
 				}
 
