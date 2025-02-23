@@ -176,6 +176,7 @@ export class NostrobotsEventTrigger implements INodeType {
 
 		// Common params
 		const strategy = this.getNodeParameter('strategy', 0) as string;
+		const threads = this.getNodeParameter('threads', 0) as boolean;
 		const relay1 = this.getNodeParameter('relay1', 0) as string;
 		const relay2 = this.getNodeParameter('relay2', 0) as string;
 
@@ -222,6 +223,10 @@ export class NostrobotsEventTrigger implements INodeType {
 		const subscribeParams = {
 			onevent: (event: Event) => {
 				if (!matchFilter(filter, event)) {
+					return;
+				}
+
+				if(!threads && event.tags.some(t => t[0] === 'e')) {
 					return;
 				}
 
