@@ -82,6 +82,15 @@ export class NostrobotsEventTrigger implements INodeType {
 				description: 'Kind number of target Event. Usually set to 1.',
 			},
 			{
+				displayName: 'Threads',
+				name: 'threads',
+				type: 'boolean',
+				default: false,
+				noDataExpression: true,
+				required: true,
+				description: 'If set to ture, events in threads are also included in the scope.',
+			},
+			{
 				displayName: 'Relay1',
 				name: 'relay1',
 				type: 'string',
