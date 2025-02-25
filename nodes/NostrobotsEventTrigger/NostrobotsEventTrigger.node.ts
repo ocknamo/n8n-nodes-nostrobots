@@ -82,6 +82,15 @@ export class NostrobotsEventTrigger implements INodeType {
 				description: 'Kind number of target Event. Usually set to 1.',
 			},
 			{
+				displayName: 'Threads',
+				name: 'threads',
+				type: 'boolean',
+				default: false,
+				noDataExpression: true,
+				required: true,
+				description: 'Whether events in threads are also included in the scope',
+			},
+			{
 				displayName: 'Relay1',
 				name: 'relay1',
 				type: 'string',
@@ -167,6 +176,7 @@ export class NostrobotsEventTrigger implements INodeType {
 
 		// Common params
 		const strategy = this.getNodeParameter('strategy', 0) as string;
+		const threads = this.getNodeParameter('threads', 0) as boolean;
 		const relay1 = this.getNodeParameter('relay1', 0) as string;
 		const relay2 = this.getNodeParameter('relay2', 0) as string;
 
@@ -213,6 +223,10 @@ export class NostrobotsEventTrigger implements INodeType {
 		const subscribeParams = {
 			onevent: (event: Event) => {
 				if (!matchFilter(filter, event)) {
+					return;
+				}
+
+				if (!threads && event.tags.some((t) => t[0] === 'e')) {
 					return;
 				}
 
