@@ -8,9 +8,9 @@ import {
 } from 'n8n-workflow';
 import { hexToBytes } from '@noble/hashes/utils';
 import ws from 'ws';
-import { finalizeEvent, Relay } from 'nostr-tools';
+import { finalizeEvent, nip04, Relay } from 'nostr-tools';
 import { defaultRelays } from '../../src/constants/rerays';
-import { getHex } from '../../src/convert/get-hex';
+import { getHex, getHexPubKey } from '../../src/convert/get-hex';
 import { oneTimePostToMultiRelay, PostResult } from '../../src/write';
 
 // polyfills
@@ -310,6 +310,13 @@ export class Nostrobots implements INodeType {
 				event.content = this.getNodeParameter('content', i) as string;
 				event.kind = 1;
 				event.tags = [];
+			} else if (resource === 'nip-04') {
+				const content = this.getNodeParameter('content', i) as string;
+				const sendTo = this.getNodeParameter('sendTo', i) as string;
+				const theirPublicKey = getHexPubKey(sendTo);
+				event.kind = 4;
+				event.tags = [['p', theirPublicKey]];
+				event.content = nip04.encrypt(sk, theirPublicKey, content);
 			} else if (resource === 'event') {
 				otherOption = this.getNodeParameter('otherOption', i) as boolean;
 				event.content = this.getNodeParameter('content', i) as string;
