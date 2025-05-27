@@ -57,6 +57,10 @@ export class Nostrobots implements INodeType {
 						name: 'Raw Json Event(advanced)',
 						value: 'json',
 					},
+					{
+						name: 'Encrypted Direct Message(nip-04)',
+						value: 'nip-04',
+					},
 				],
 				default: 'kind1',
 				noDataExpression: true,
@@ -64,12 +68,24 @@ export class Nostrobots implements INodeType {
 				description: 'Create a new note',
 			},
 			{
+				displayName:
+					'NIP-04 does not go anywhere near what is considered the state-of-the-art in encrypted communication between peers, and it leaks metadata in the events. Use only if you do not have a problem with the sender and receiver information being divulged.',
+				name: 'nip04hints',
+				type: 'notice',
+				displayOptions: {
+					show: {
+						resource: ['nip-04'],
+					},
+				},
+				default: '',
+			},
+			{
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
 				displayOptions: {
 					show: {
-						resource: ['event', 'kind1', 'json'],
+						resource: ['event', 'kind1', 'json', 'nip-04'],
 					},
 				},
 				options: [
@@ -92,7 +108,7 @@ export class Nostrobots implements INodeType {
 				displayOptions: {
 					show: {
 						operation: ['send'],
-						resource: ['kind1', 'event'],
+						resource: ['kind1', 'event', 'nip-04'],
 					},
 				},
 				default: '',
@@ -136,6 +152,21 @@ export class Nostrobots implements INodeType {
 				default: '[]',
 				placeholder: 'tags json string',
 				description: 'Tags https://github.com/nostr-protocol/nips#standardized-tags',
+			},
+			// nip-04 option
+			{
+				displayName: 'SendTo',
+				name: 'sendTo',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['nip-04'],
+					},
+				},
+				default: '',
+				placeholder: 'recipient public key',
+				description: 'Hex or npub',
 			},
 			// other option
 			{
