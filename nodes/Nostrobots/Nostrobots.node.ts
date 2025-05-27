@@ -262,7 +262,7 @@ export class Nostrobots implements INodeType {
 				displayOptions: {
 					show: {
 						operation: ['send'],
-						resource: ['event', 'kind1', 'json'],
+						resource: ['event', 'kind1', 'json', 'nip-04'],
 					},
 				},
 				default: defaultRelays.join(','),
@@ -316,7 +316,7 @@ export class Nostrobots implements INodeType {
 				const theirPublicKey = getHexPubKey(sendTo);
 				event.kind = 4;
 				event.tags = [['p', theirPublicKey]];
-				event.content = nip04.encrypt(sk, theirPublicKey, content);
+				event.content = await nip04.encrypt(sk, theirPublicKey, content);
 			} else if (resource === 'event') {
 				otherOption = this.getNodeParameter('otherOption', i) as boolean;
 				event.content = this.getNodeParameter('content', i) as string;
