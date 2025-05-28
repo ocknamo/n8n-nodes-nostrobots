@@ -1,0 +1,178 @@
+# .clinerules for n8n-nodes-nostrobots
+
+## 前提
+ユーザーはプログラミングが得意。
+時短のためにClineにコーディングを依頼。
+
+テスト2回連続失敗時は作業停止。
+状況を整理報告し、指示を待つ。
+
+不明点はユーザーに確認。
+
+## プロジェクト概要
+このプロジェクトは、NostrプロトコルをN8Nワークフローで使用できるようにするコミュニティノードライブラリです。
+- TypeScriptで実装
+- N8Nノード開発パターンに従う
+- Nostrプロトコル(NIP)の実装
+- Jest/ESLint/Prettierによる品質管理
+
+## 既存ノード一覧
+### Nostrobots (Nostr Write)
+- kind1ノート送信
+- 高度なイベント送信
+- 生JSONイベント送信
+
+### NostrobotsRead (Nostr Read)
+- EventId、ハッシュタグ、メンション検索
+- テキスト検索(NIP-50)
+- ユーザー公開鍵によるイベント取得
+- 生フィルター機能
+
+### NostrobotsEventTrigger (Nostr Trigger) [BETA]
+- メンションによるワークフロー起動
+- レート制限機能
+- ブラックリスト/ホワイトリスト機能
+
+### NostrobotsUtils (Nostr Utils)
+- イベントからnaddr/nevent変換
+- キー形式変換(npub/nsec/hex)
+
+## 機能追加提案ルール
+新機能要求時は、既存ノードへの機能追加で対応可能かを最初に検討し、以下の場合は機能追加を提案：
+- 既存ノードの操作種別に新しいオプションを追加できる場合
+- 既存ノードのフィルター機能を拡張できる場合
+- 既存ノードのパラメータ追加で実現できる場合
+- 既存ノードの出力形式を拡張できる場合
+
+新ノード作成は、既存ノードでは実現困難な全く新しい機能の場合のみとする。
+
+## コーディング規約とベストプラクティス
+
+### TypeScript
+- 厳密な型定義を使用
+- `n8n-workflow`の型定義に従う
+- インターフェースは明確に定義
+- async/awaitを適切に使用
+
+### N8Nノード開発
+- ノードクラスは`INodeType`を実装
+- プロパティは`INodeTypeDescription`に従って定義
+- `execute`メソッドで主要ロジックを実装
+- エラーハンドリングは`NodeApiError`や`NodeOperationError`を使用
+- 認証情報は`credentials`フォルダで管理
+
+### Nostrプロトコル
+- NIP仕様に準拠した実装
+- イベントの種類(kind)を適切に処理
+- bech32エンコーディング/デコーディングの適切な使用
+- リレー接続の適切な管理
+
+### ファイル構造
+```
+nodes/           # N8Nノード実装
+credentials/     # 認証情報定義
+src/            # 共通ロジック
+  common/       # 共通ユーティリティ
+  convert/      # 変換ロジック
+  guards/       # ガード処理
+doc/            # ドキュメント
+sample/         # サンプルワークフロー
+```
+
+### ファイル名規約
+- すべてのファイルはケバブケース（kebab-case）で実装
+- 例: bech32-converter.ts, bech32-converter.spec.ts
+
+### 主要スクリプト
+- `yarn format` - Prettierフォーマット実行
+- `yarn lint` - ESLint実行
+- `yarn test` - テスト実行
+- `yarn build` - TypeScriptコンパイルとアイコンビルド
+
+### テスト
+- ユニットテストは`.spec.ts`拡張子（`.test.ts`ではない）
+- テストファイルは対象ファイルと同じディレクトリに配置
+- モック使用時は適切にcleanup
+- 非同期処理のテストは適切にawait
+- 特殊回避実装を追加しない
+- 原因不明時はユーザーに確認
+- タイムアウト時間を勝手に修正しない
+
+### エラーハンドリング
+- Nostrリレー接続エラーの適切な処理
+- タイムアウト処理の実装
+- ユーザーフレンドリーなエラーメッセージ
+
+### セキュリティ
+- 秘密鍵の適切な取り扱い
+- 入力値の検証とサニタイゼーション
+- レート制限の実装
+- 機密ファイル（.env、*.pem、APIキー等）は読み書き禁止
+- 秘密情報は環境変数使用
+- ログに認証情報を含めない
+
+## 新機能開発時の注意点
+
+### ノード追加時
+1. `nodes/`ディレクトリに新しいフォルダ作成
+2. `.node.ts`, `.node.json`, `.svg`ファイルを作成
+3. `package.json`の`n8n.nodes`配列に追加
+
+### NIP実装時
+- 公式NIP仕様を確認
+- 既存の実装パターンに従う
+- 下位互換性を維持
+- 適切なテストケース追加
+
+### 依存関係更新時
+- `nostr-tools`の最新版を確認
+- 破壊的変更がないか検証
+- テストが通ることを確認
+
+## ビルドとデプロイ
+- `yarn build`でTypeScriptコンパイルとアイコンビルド
+- `dist/`ディレクトリが生成される
+- npmパッケージング前に`prepublishOnly`スクリプト実行
+
+## 作業方法
+
+### 開始前
+1. `git status`でコンテキスト確認。無関係な変更が多い場合は別タスク提案。
+
+### 実行中
+1. `yarn test`で検証。失敗時は修正。
+
+### 完了後
+1. 変更内容のレビュー要求
+2. `yarn format`でコードをフォーマット
+3. `git commit`の確認
+
+## コミットメッセージ規約
+
+### 基本構造
+"<type>(<scope>): <subject>"
+
+### タイプ
+- "feat:" - 機能追加
+- "fix:" - バグ修正
+- "refactor:" - リファクタリング
+- "docs:" - ドキュメント修正
+
+※pushはユーザーが実行
+
+## ドキュメント要件
+- 各関数にコメントを付ける
+- ドキュメントは英語で記述（サポートは日本語可）
+- 新機能追加時は対応するドキュメント更新
+- 日本語(`-ja.md`)と英語版両方を更新
+- サンプルワークフローも適切に更新
+
+## 互換性
+- Node.js <= 20.15.0
+- yarn ~1.22.5
+- n8n-workflow API version 1
+
+## 参考リソース
+- [N8N Community Nodes Documentation](https://docs.n8n.io/integrations/community-nodes/)
+- [Nostr Protocol NIPs](https://github.com/nostr-protocol/nips)
+- [nostr-tools Documentation](https://github.com/nbd-wtf/nostr-tools)
