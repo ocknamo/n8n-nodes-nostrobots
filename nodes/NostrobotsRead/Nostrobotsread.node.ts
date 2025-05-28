@@ -5,15 +5,23 @@ import {
 	INodeTypeDescription,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { Event, Filter } from 'nostr-tools';
+import { Event, Filter, nip04, getPublicKey } from 'nostr-tools';
+import { hexToBytes } from '@noble/hashes/utils';
 import ws from 'ws';
 import { defaultRelays } from '../../src/constants/rerays';
-import { getHexEventId } from '../../src/convert/get-hex';
+import { getHexEventId, getHex } from '../../src/convert/get-hex';
 import { getSince, getUnixtimeFromDateString, getUntilNow } from '../../src/convert/time';
 import { fetchEvents } from '../../src/read';
 import { isSupportNip50 } from '../../src/common/relay-info';
 import { FilterStrategy, buildFilter } from '../../src/common/filter';
 import { ShareableIdentifier } from '../../src/convert/parse-tlv-hex';
+
+// Extended Event type for NIP-04 decrypted messages
+interface DecryptedEvent extends Event {
+	decrypted?: boolean;
+	counterpart?: string;
+	decryptionError?: string;
+}
 
 // polyfills
 (global as any).WebSocket = ws;
@@ -32,12 +40,22 @@ export class Nostrobotsread implements INodeType {
 		},
 		inputs: ['main'],
 		outputs: ['main'],
+		credentials: [
+			{
+				name: 'nostrobotsApi',
+				required: false,
+			},
+		],
 		properties: [
 			{
 				displayName: 'Strategy',
 				name: 'strategy',
 				type: 'options',
 				options: [
+					{
+						name: 'Encrypted Direct Message(nip-04)',
+						value: 'nip-04',
+					},
 					{
 						name: 'EventId',
 						value: 'eventid',
@@ -155,6 +173,30 @@ export class Nostrobotsread implements INodeType {
 				placeholder: 'npub...',
 				description: 'Mention search. Please enter the public key of the person mentioned.',
 			},
+			{
+				displayName:
+					'NIP-04 is deprecated in favor of NIP-17. This standard leaks metadata and must not be used for sensitive communications. Only use with AUTH-enabled relays.',
+				name: 'nip04ReadWarning',
+				type: 'notice',
+				displayOptions: {
+					show: {
+						strategy: ['nip-04'],
+					},
+				},
+				default: '',
+			},
+			{
+				displayName:
+					'NIP-04 requires Nostrobots API credentials (secret key) to decrypt messages. Please configure your credentials first.',
+				name: 'nip04CredentialsRequired',
+				type: 'notice',
+				displayOptions: {
+					show: {
+						strategy: ['nip-04'],
+					},
+				},
+				default: '',
+			},
 			// common option
 			{
 				displayName: 'Relative',
@@ -260,6 +302,28 @@ export class Nostrobotsread implements INodeType {
 		const strategy = this.getNodeParameter('strategy', 0) as FilterStrategy;
 		const errorWithEmptyResult = this.getNodeParameter('errorWithEmptyResult', 0) as string;
 
+		// Get credentials for NIP-04
+		let sk: Uint8Array | undefined;
+		let myPubkey: string | undefined;
+
+		if (strategy === 'nip-04') {
+			const credentials = await this.getCredentials('nostrobotsApi');
+			const { secKey } = credentials;
+
+			if (typeof secKey !== 'string') {
+				throw new NodeOperationError(this.getNode(), 'Invalid secret key was provided!');
+			}
+
+			if (secKey.startsWith('nsec')) {
+				sk = hexToBytes(getHex(secKey, 'nsec'));
+			} else {
+				sk = hexToBytes(secKey);
+			}
+
+			// Calculate public key from secret key
+			myPubkey = getPublicKey(sk);
+		}
+
 		let events: Event[] = [];
 
 		for (let i = 0; i < items.length; i++) {
@@ -317,7 +381,8 @@ export class Nostrobotsread implements INodeType {
 
 			const strategyInfo = {
 				eventid: si?.special,
-				[strategy]: this.getNodeParameter(strategy, i) as string,
+				[strategy]:
+					strategy === 'nip-04' ? myPubkey || '' : (this.getNodeParameter(strategy, i) as string),
 			};
 
 			const filter: Filter = buildFilter(strategy, strategyInfo, since, until);
@@ -335,6 +400,34 @@ export class Nostrobotsread implements INodeType {
 		 */
 		if (errorWithEmptyResult && events.length <= 0) {
 			throw new NodeOperationError(this.getNode(), 'Result is empty!');
+		}
+
+		/**
+		 * Decrypt NIP-04 messages if needed
+		 */
+		if (strategy === 'nip-04' && sk) {
+			// No need for counterpart parameter - will use each event's sender pubkey
+
+			for (let j = 0; j < events.length; j++) {
+				const event = events[j];
+				if (event.kind === 4) {
+					// Use the event's author (sender) public key for decryption
+					const senderPubkey = event.pubkey;
+					const decryptedEvent = event as DecryptedEvent;
+					try {
+						const decryptedContent = await nip04.decrypt(sk, senderPubkey, event.content);
+						decryptedEvent.content = decryptedContent;
+						decryptedEvent.decrypted = true;
+						decryptedEvent.counterpart = senderPubkey;
+					} catch (error) {
+						decryptedEvent.content = '[Decryption failed]';
+						decryptedEvent.decrypted = false;
+						decryptedEvent.decryptionError =
+							error instanceof Error ? error.message : 'Unknown error';
+						decryptedEvent.counterpart = senderPubkey;
+					}
+				}
+			}
 		}
 
 		/**
