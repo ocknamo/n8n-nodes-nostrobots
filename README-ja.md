@@ -29,9 +29,11 @@ n8n コミュニティ ノードのドキュメントの [インストール ガ
   - kind1 note の送信
   - イベントの送信(advanced)
   - 生のJsonイベント(advanced)
+  - 暗号化ダイレクトメッセージ (NIP-04)
 - [Nostr Read](./doc/read-ja.md)
   - イベントの取得
   - イベントID・公開鍵・文字列検索(NIP-50)・ハッシュタグ・メンション・jsonのフィルタによるクエリ
+  - 暗号化ダイレクトメッセージの読み込み (NIP-04)
 - [BETA] Nostr Trigger
   - イベントの購読をトリガーにn8nのワークフローを開始する
   - 特定のnpubに対するメンションによるワークフローのトリガー
@@ -39,6 +41,7 @@ n8n コミュニティ ノードのドキュメントの [インストール ガ
 - [Nostr Utils](./doc/utils-ja.md)
   - イベントからnaddr, neventへの変換(ConvertEvent)
   - bech32、16進数表現の鍵を相互に変換する(TransformKeys)
+  - NIP-04暗号化メッセージの復号化
 
 ## Credentials
 

@@ -14,11 +14,12 @@ We recommend that you create and use a disposable test account while you are cre
 
 - type: selectbox
 
-You can choose how you want to create the event. There are three options:
+You can choose how you want to create the event. There are four options:
 
 - 'BasicNote'
 - 'Event(advanced)'
 - 'Raw Json Event(advanced)'
+- 'Encrypted Direct Message(nip-04)'
 
 ### BasicNote
 
@@ -93,6 +94,18 @@ This option allows you to set raw json as is. Although the usage is limited, the
 - type: text
 
 Displayed only for 'Raw Json Event(advanced)'. Enter the full signed event json for json. Therefore, it will not sign with the account selected in 'Credential to connect with'.
+
+### Encrypted Direct Message(nip-04)
+
+This option allows you to send encrypted direct messages using NIP-04. The message content will be encrypted using the sender's private key and the recipient's public key.
+
+**Security Warning**: NIP-04 is deprecated in favor of NIP-17. This standard leaks metadata and must not be used for sensitive communications. Only use with AUTH-enabled relays.
+
+#### SendTo
+
+- type: text
+
+The public key of the nip-04 message recipient. You can use either HEX or bech32 (npub) format.
 
 
 ## Content

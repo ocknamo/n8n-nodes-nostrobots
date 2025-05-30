@@ -4,12 +4,13 @@
 
 - type: select box
 
-Specifies how to retrieve events from the relay. You can choose from two options.
+Specifies how to retrieve events from the relay. You can choose from four options.
 All you have to do is choose what to set as the filter to send to the relay.
 
 - UserPublickey
 - EventId
 - Text Search
+- Encrypted Direct Message(nip-04)
 
 
 ### UserPublickey
@@ -26,6 +27,14 @@ Either HEX or bech32 (nevent) method can be specified.
 
 The entered text can be used to string search the content of an event; at least one relay which support NIP-50 must be set.
 The target of retrieval is note events (kind1) issued within a specified period of time.
+
+### Encrypted Direct Message(nip-04)
+
+Retrieve and decrypt encrypted direct messages (kind 4) using NIP-04. This option requires Nostrobots API credentials (secret key) to decrypt messages.
+
+**Security Warning**: NIP-04 is deprecated in favor of NIP-17. This standard leaks metadata and must not be used for sensitive communications. Only use with AUTH-enabled relays.
+
+The retrieved messages will be automatically decrypted using your private key and the sender's public key. Both sent and received messages will be retrieved based on your public key.
 
 ## Specify period range
 
