@@ -8,6 +8,7 @@
 
 - ConvertEvent
 - TransformKeys
+- DecryptNip04
 
 ### ConvertEvent
 
@@ -18,6 +19,12 @@ https://github.com/nostr-protocol/nips/blob/master/19.md#shareable-identifiers-w
 ### TransformKeys
 
 Npub,Nsec,Hex public key,Hex secret keyのうち変換可能な組み合わせを相互に変換することができます。
+
+### DecryptNip04
+
+NIP-04で暗号化されたメッセージを復号化します。この操作はメッセージ内容を復号化するためにNostrobots APIクレデンシャル（秘密鍵）が必要です。
+
+**セキュリティ警告**: NIP-04は非推奨でありNIP-17を推奨します。この標準はメタデータを漏洩させ、機密性の高い通信には使用しないでください。
 
 ## ConvertOutput
 
@@ -64,3 +71,15 @@ wss://relay.damus.io,wss://relay-jp.nostr.wirednet.jp,wss://nostr-relay.nokotaro
 - type: テキスト
 
 変換元の鍵を入力します。OperationがTransformKeysの場合のみ指定できます。
+
+## Encrypted Content
+
+- type: テキスト
+
+復号化する暗号化されたメッセージ内容です。OperationがDecryptNip04の場合のみ指定できます。
+
+## Sender Public Key
+
+- type: テキスト
+
+メッセージ送信者の公開鍵です。HEXまたはbech32 (npub)形式のいずれも使用できます。OperationがDecryptNip04の場合のみ指定できます。

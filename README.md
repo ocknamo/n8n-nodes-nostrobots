@@ -29,12 +29,15 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
   - Send kind1 note
   - Send event(advanced)
   - Raw Json Event(advanced)
+  - Encrypted Direct Message (NIP-04)
 - [Nostr Read](./doc/read.md)
   - Fetch kind1 events
-    - Query by eventId, public key, search word(NIP-50), hashtag, mention, and json filter 
+    - Query by eventId, public key, search word(NIP-50), hashtag, mention, and json filter
+  - Encrypted Direct Message reading (NIP-04) 
 - [Nostr Utils](./doc/utils.md)
   - Conversion from event to naddr, nevent
   - Transform bech32, hex representation of keys to each other
+  - Decrypt NIP-04 encrypted messages
 - [BETA] [Nostr Trigger](./doc/trigger.md)
   - Trigger n8n workflow by subscribing to events
   - Triggering workflows by mentions to specific npubs

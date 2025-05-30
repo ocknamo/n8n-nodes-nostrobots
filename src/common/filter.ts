@@ -8,6 +8,7 @@ export enum FilterStrategy {
 	rawFilter = 'rawFilter',
 	textSearch = 'textSearch',
 	pubkey = 'pubkey',
+	nip04 = 'nip-04',
 }
 
 export function buildFilter(
@@ -27,6 +28,7 @@ export function buildFilter(
 
 	switch (strategy) {
 		case 'pubkey':
+			if (!specificData) throw new Error('Public key is required');
 			const pubkey = getHexPubKey(specificData);
 
 			filter = {
@@ -38,6 +40,7 @@ export function buildFilter(
 			break;
 
 		case 'eventid':
+			if (!specificData) throw new Error('Event ID is required');
 			const si = getHexEventId(specificData);
 
 			filter = {
@@ -47,6 +50,7 @@ export function buildFilter(
 			break;
 
 		case 'textSearch':
+			if (!specificData) throw new Error('Search word is required');
 			const searchWord = specificData;
 
 			filter = {
@@ -59,6 +63,7 @@ export function buildFilter(
 			break;
 
 		case 'hashtag':
+			if (!specificData) throw new Error('Hashtag is required');
 			let tagString = specificData;
 			tagString = tagString.replace('#', '');
 
@@ -72,6 +77,7 @@ export function buildFilter(
 			break;
 
 		case 'rawFilter':
+			if (!specificData) throw new Error('Filter JSON is required');
 			const filterJsonString = specificData;
 
 			let json;
@@ -87,11 +93,25 @@ export function buildFilter(
 			break;
 
 		case 'mention':
+			if (!specificData) throw new Error('Mention public key is required');
 			const mentionedpubkey = getHexPubKey(specificData);
 
 			filter = {
 				kinds,
 				'#p': [mentionedpubkey],
+				since,
+				until,
+			};
+
+			break;
+
+		case 'nip-04':
+			if (!specificData) throw new Error('My public key is required for NIP-04 filter');
+			const myPubkey = specificData;
+
+			filter = {
+				kinds: [4],
+				'#p': [myPubkey],
 				since,
 				until,
 			};

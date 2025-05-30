@@ -8,6 +8,7 @@ Select the operation you want to perform.
 
 - ConvertEvent
 - TransformKeys
+- DecryptNip04
 
 ### ConvertEvent
 
@@ -18,6 +19,12 @@ https://github.com/nostr-protocol/nips/blob/master/19.md#shareable-identifiers-w
 ### TransformKeys
 
 You can convert between Npub, Nsec, Hex public key, and Hex secret key.
+
+### DecryptNip04
+
+Decrypt NIP-04 encrypted messages. This operation requires Nostrobots API credentials (secret key) to decrypt the message content.
+
+**Security Warning**: NIP-04 is deprecated in favor of NIP-17. This standard leaks metadata and must not be used for sensitive communications.
 
 ## ConvertOutput
 
@@ -64,3 +71,15 @@ You can select the key to convert to. This can only be specified when Operation 
 - type: text
 
 Enter the key to convert to. This can only be specified when Operation is TransformKeys.
+
+## Encrypted Content
+
+- type: text
+
+The encrypted message content to decrypt. This can only be specified when Operation is DecryptNip04.
+
+## Sender Public Key
+
+- type: text
+
+The public key of the message sender. You can use either HEX or bech32 (npub) format. This can only be specified when Operation is DecryptNip04.
