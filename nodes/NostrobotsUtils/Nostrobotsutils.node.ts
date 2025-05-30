@@ -5,12 +5,16 @@ import {
 	INodeTypeDescription,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { Event } from 'nostr-tools';
+import { Event, nip04 } from 'nostr-tools';
 import { hexToBytes } from '@noble/hashes/utils';
 import ws from 'ws';
 import { defaultRelays } from '../../src/constants/rerays';
 import { getNpubFromNsecOrHexpubkey } from '../../src/convert/get-npub';
-import { getHexpubkeyfromNpubOrNsecOrHexseckey, getHexSecKey } from '../../src/convert/get-hex';
+import {
+	getHexpubkeyfromNpubOrNsecOrHexseckey,
+	getHexSecKey,
+	getHex,
+} from '../../src/convert/get-hex';
 
 // polyfills
 (global as any).WebSocket = ws;
@@ -29,6 +33,17 @@ export class Nostrobotsutils implements INodeType {
 		},
 		inputs: ['main'],
 		outputs: ['main'],
+		credentials: [
+			{
+				name: 'nostrobotsApi',
+				required: false,
+				displayOptions: {
+					show: {
+						operation: ['decryptNip04'],
+					},
+				},
+			},
+		],
 		properties: [
 			{
 				displayName: 'Operation',
@@ -42,6 +57,10 @@ export class Nostrobotsutils implements INodeType {
 					{
 						name: 'TransformKeys',
 						value: 'transformKey',
+					},
+					{
+						name: 'DecryptNip04',
+						value: 'decryptNip04',
 					},
 				],
 				default: 'convertEvent',
@@ -201,6 +220,59 @@ export class Nostrobotsutils implements INodeType {
 					},
 				},
 			},
+			// For NIP-04 Decrypt
+			{
+				displayName: 'NIP-04 Security Warning',
+				name: 'nip04Warning',
+				type: 'notice',
+				default:
+					'NIP-04 is deprecated and leaks metadata. Use only with AUTH-enabled relays for non-sensitive communications.',
+				displayOptions: {
+					show: {
+						operation: ['decryptNip04'],
+					},
+				},
+			},
+			{
+				displayName:
+					'NIP-04 requires Nostrobots API credentials (secret key) to decrypt messages. Please configure your credentials first.',
+				name: 'nip04CredentialsRequired',
+				type: 'notice',
+				displayOptions: {
+					show: {
+						operation: ['decryptNip04'],
+					},
+				},
+				default: '',
+			},
+			{
+				displayName: 'Sender Public Key (Npub or Hex)',
+				name: 'senderPubkey',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						operation: ['decryptNip04'],
+					},
+				},
+				default: '',
+				placeholder: 'npub1... or hex string',
+				description: 'Public key of the message sender',
+			},
+			{
+				displayName: 'Encrypted Content',
+				name: 'encryptedContent',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						operation: ['decryptNip04'],
+					},
+				},
+				default: '',
+				placeholder: 'encrypted message content',
+				description: 'NIP-04 encrypted message content to decrypt',
+			},
 		],
 	};
 	// The execute method will go here
@@ -296,6 +368,53 @@ export class Nostrobotsutils implements INodeType {
 					throw new NodeOperationError(this.getNode(), 'Invalid transformTo value.');
 			}
 			returnData.push({ output, type: transformTo });
+		} else if (operation === 'decryptNip04') {
+			// Get credentials for NIP-04
+			const credentials = await this.getCredentials('nostrobotsApi');
+			const { secKey } = credentials;
+
+			if (typeof secKey !== 'string') {
+				throw new NodeOperationError(this.getNode(), 'Invalid secret key was provided!');
+			}
+
+			let sk: Uint8Array;
+			if (secKey.startsWith('nsec')) {
+				sk = hexToBytes(getHex(secKey, 'nsec'));
+			} else {
+				sk = hexToBytes(secKey);
+			}
+
+			for (let i = 0; i < items.length; i++) {
+				try {
+					// Get parameters
+					const senderPubkey = this.getNodeParameter('senderPubkey', i) as string;
+					const encryptedContent = this.getNodeParameter('encryptedContent', i) as string;
+
+					// Convert sender public key to hex format
+					let hexSenderPubkey: string;
+					if (senderPubkey.startsWith('npub')) {
+						hexSenderPubkey = await getHexpubkeyfromNpubOrNsecOrHexseckey(senderPubkey);
+					} else {
+						hexSenderPubkey = senderPubkey;
+					}
+
+					// Decrypt the content
+					const decryptedContent = await nip04.decrypt(sk, hexSenderPubkey, encryptedContent);
+
+					returnData.push({
+						decryptedContent,
+						senderPubkey: hexSenderPubkey,
+						originalEncrypted: encryptedContent,
+					});
+				} catch (error) {
+					throw new NodeOperationError(
+						this.getNode(),
+						`Failed to decrypt NIP-04 message: ${
+							error instanceof Error ? error.message : 'Unknown error'
+						}`,
+					);
+				}
+			}
 		} else {
 			throw new NodeOperationError(this.getNode(), 'Invalid operation.');
 		}
