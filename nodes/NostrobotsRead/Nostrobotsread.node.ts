@@ -44,6 +44,11 @@ export class Nostrobotsread implements INodeType {
 			{
 				name: 'nostrobotsApi',
 				required: false,
+				displayOptions: {
+					show: {
+						strategy: ['nip-04'],
+					},
+				},
 			},
 		],
 		properties: [
