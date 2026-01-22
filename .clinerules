@@ -84,10 +84,10 @@ sample/         # サンプルワークフロー
 - 例: bech32-converter.ts, bech32-converter.spec.ts
 
 ### 主要スクリプト
-- `yarn format` - Prettierフォーマット実行
-- `yarn lint` - ESLint実行
-- `yarn test` - テスト実行
-- `yarn build` - TypeScriptコンパイルとアイコンビルド
+- `npm run format` - Prettierフォーマット実行
+- `npm run lint` - ESLint実行
+- `npm run test` - テスト実行
+- `npm run build` - TypeScriptコンパイルとアイコンビルド
 
 ### テスト
 - ユニットテストは`.spec.ts`拡張子（`.test.ts`ではない）
@@ -130,7 +130,7 @@ sample/         # サンプルワークフロー
 - テストが通ることを確認
 
 ## ビルドとデプロイ
-- `yarn build`でTypeScriptコンパイルとアイコンビルド
+- `npm run build`でTypeScriptコンパイルとアイコンビルド
 - `dist/`ディレクトリが生成される
 - npmパッケージング前に`prepublishOnly`スクリプト実行
 
@@ -140,11 +140,11 @@ sample/         # サンプルワークフロー
 1. `git status`でコンテキスト確認。無関係な変更が多い場合は別タスク提案。
 
 ### 実行中
-1. `yarn test`で検証。失敗時は修正。
+1. `npm run test`で検証。失敗時は修正。
 
 ### 完了後
 1. 変更内容のレビュー要求
-2. `yarn format`でコードをフォーマット
+2. `npm run format`でコードをフォーマット
 3. `git commit`の確認
 
 ## コミットメッセージ規約
@@ -169,7 +169,6 @@ sample/         # サンプルワークフロー
 
 ## 互換性
 - Node.js <= 20.15.0
-- yarn ~1.22.5
 - n8n-workflow API version 1
 
 ## 参考リソース

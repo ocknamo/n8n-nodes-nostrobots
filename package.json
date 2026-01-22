@@ -19,8 +19,7 @@
     "url": "https://github.com/ocknamo/n8n-nodes-nostrobots.git"
   },
   "engines": {
-    "node": "<=20.15.0",
-    "yarn": "~1.22.5"
+    "node": "<=20.15.0"
   },
   "main": "index.js",
   "scripts": {
@@ -33,7 +32,7 @@
     "lintfix": "eslint nodes credentials package.json --fix",
     "prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes credentials package.json",
     "test": "jest",
-    "ci:test": "yarn test"
+    "ci:test": "npm run test"
   },
   "files": [
     "dist"

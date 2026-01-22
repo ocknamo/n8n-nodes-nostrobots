@@ -22,12 +22,11 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'yarn'
-    - run: npm install --global yarn
-    - run: yarn install --frozen-lockfile
-    - run: yarn build
-    - run: yarn ci:format
-    - run: yarn ci:lint
+        cache: 'npm'
+    - run: npm ci
+    - run: npm run build
+    - run: npm run ci:format
+    - run: npm run ci:lint
 
   test:
 
@@ -44,7 +43,6 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'yarn'
-    - run: npm install --global yarn
-    - run: yarn install --frozen-lockfile
-    - run: yarn ci:test
+        cache: 'npm'
+    - run: npm ci
+    - run: npm run ci:test
