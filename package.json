@@ -23,7 +23,7 @@
   },
   "main": "index.js",
   "scripts": {
-    "build": "tsc && gulp build:icons",
+    "build": "npm run clear-build && tsc && npm run build-icons",
     "dev": "tsc --watch",
     "format": "prettier nodes credentials src --write",
     "ci:format": "prettier nodes credentials src --check",
@@ -32,7 +32,9 @@
     "lintfix": "eslint nodes credentials package.json --fix",
     "prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes credentials package.json",
     "test": "jest",
-    "ci:test": "npm run test"
+    "ci:test": "npm run test",
+    "clear-build": "rm -rf ./dist",
+    "build-icons": "mkdir ./dist/icons && cp -r ./icons/*.svg ./dist/icons/"
   },
   "files": [
     "dist"
@@ -53,14 +55,11 @@
     "@types/express": "^4.17.6",
     "@types/jest": "^29.5.11",
     "@types/node": "18",
-    "@types/request-promise-native": "~1.0.15",
     "@types/ws": "^8.5.13",
     "@typescript-eslint/parser": "~6.21",
     "eslint": "^8.38.0",
     "eslint-plugin-n8n-nodes-base": "^1.16.3",
-    "gulp": "^4.0.2",
     "jest": "^29.7.0",
-    "n8n-core": "*",
     "n8n-workflow": "*",
     "prettier": "^2.7.1",
     "ts-jest": "^29.1.0",
@@ -71,6 +70,9 @@
     "bech32": "^2.0.0",
     "nostr-tools": "^2.10.4",
     "ws": "^8.18.0"
+  },
+  "overrides": {
+    "form-data": "4.0.4"
   },
   "volta": {
     "node": "24.13.0"

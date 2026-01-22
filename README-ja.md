@@ -86,10 +86,6 @@ npm run format
 npm run lint
 ```
 
-## TODO
-
-- リレーからイベントを取得してトリガーする新たなノード
-
 ## See also
 
 - [ノーコードで作るnostrボット - n8n-nostrobots](https://habla.news/u/ocknamo@ocknamo.com/1702402471044) (japanese)

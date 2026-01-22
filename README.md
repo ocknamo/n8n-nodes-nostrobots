@@ -85,10 +85,6 @@ npm run format
 npm run lint
 ```
 
-## TODO
-
-- Trigger node by getting event from relay.
-
 ## See also
 
 - [ノーコードで作るnostrボット - n8n-nostrobots](https://habla.news/u/ocknamo@ocknamo.com/1702402471044) (japanese)

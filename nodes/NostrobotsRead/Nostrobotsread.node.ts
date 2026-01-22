@@ -1,9 +1,9 @@
-import { IExecuteFunctions } from 'n8n-core';
 import {
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
 	NodeOperationError,
+	IExecuteFunctions,
 } from 'n8n-workflow';
 import { Event, Filter, nip04, getPublicKey } from 'nostr-tools';
 import { hexToBytes } from '@noble/hashes/utils';
@@ -31,7 +31,7 @@ export class Nostrobotsread implements INodeType {
 		// Basic node details will go here
 		displayName: 'Nostr Read',
 		name: 'nostrobotsread',
-		icon: 'file:nostrobotsread.svg',
+		icon: 'file:../../icons/nostrobots.svg',
 		group: ['transform'],
 		version: 1,
 		description: 'Read from Nostr relay',

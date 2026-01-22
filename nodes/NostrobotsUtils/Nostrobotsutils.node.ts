@@ -1,9 +1,9 @@
-import { IExecuteFunctions } from 'n8n-core';
 import {
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
 	NodeOperationError,
+	IExecuteFunctions,
 } from 'n8n-workflow';
 import { Event, nip04 } from 'nostr-tools';
 import { hexToBytes } from '@noble/hashes/utils';
@@ -24,7 +24,7 @@ export class Nostrobotsutils implements INodeType {
 		// Basic node details will go here
 		displayName: 'Nostr Utils',
 		name: 'nostrobotsutils',
-		icon: 'file:nostrobotsutils.svg',
+		icon: 'file:../../icons/nostrobots.svg',
 		group: ['transform'],
 		version: 1,
 		description: 'Nostr Utility',
