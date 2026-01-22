@@ -19,7 +19,7 @@
     "url": "https://github.com/ocknamo/n8n-nodes-nostrobots.git"
   },
   "engines": {
-    "node": "<=20.15.0"
+    "node": "<=20.20.0"
   },
   "main": "index.js",
   "scripts": {
@@ -71,5 +71,8 @@
     "bech32": "^2.0.0",
     "nostr-tools": "^2.10.4",
     "ws": "^8.18.0"
+  },
+  "volta": {
+    "node": "24.13.0"
   }
 }
