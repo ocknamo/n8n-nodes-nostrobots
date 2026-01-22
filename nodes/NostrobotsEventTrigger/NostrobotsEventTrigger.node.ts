@@ -24,7 +24,7 @@ export class NostrobotsEventTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Nostr Trigger',
 		name: 'nostrobotsEventTrigger',
-		icon: 'file:nostrobotseventtrigger.svg',
+		icon: 'file:../../icons/nostrobots.svg',
 		group: ['trigger'],
 		version: 1,
 		description: '[BETA]Nostr Trigger. This is an experimental feature',

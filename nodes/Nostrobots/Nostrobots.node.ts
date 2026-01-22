@@ -24,7 +24,7 @@ export class Nostrobots implements INodeType {
 		// Basic node details will go here
 		displayName: 'Nostr Write',
 		name: 'nostrobots',
-		icon: 'file:nostrobots.svg',
+		icon: 'file:../../icons/nostrobots.svg',
 		group: ['transform'],
 		version: 1,
 		description: 'Consume Nostr API',

@@ -31,7 +31,7 @@ export class Nostrobotsread implements INodeType {
 		// Basic node details will go here
 		displayName: 'Nostr Read',
 		name: 'nostrobotsread',
-		icon: 'file:nostrobotsread.svg',
+		icon: 'file:../../icons/nostrobots.svg',
 		group: ['transform'],
 		version: 1,
 		description: 'Read from Nostr relay',

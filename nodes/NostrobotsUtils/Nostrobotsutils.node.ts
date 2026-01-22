@@ -24,7 +24,7 @@ export class Nostrobotsutils implements INodeType {
 		// Basic node details will go here
 		displayName: 'Nostr Utils',
 		name: 'nostrobotsutils',
-		icon: 'file:nostrobotsutils.svg',
+		icon: 'file:../../icons/nostrobots.svg',
 		group: ['transform'],
 		version: 1,
 		description: 'Nostr Utility',
