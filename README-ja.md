@@ -65,25 +65,25 @@ n8n コミュニティ ノードのドキュメントの [インストール ガ
 
 ``` sh
 # project root path
-yarn build
-yarn link
+npm run build
+npm link
 
 # move to n8n node directory. eg. ~/.n8n/nodes
-yarn link n8n-nodes-nostrobots
+npm link n8n-nodes-nostrobots
 n8n start
 ```
 
 ### Unit test
 
 ``` sh
-yarn test
+npm run test
 ```
 
 ## lint
 
 ``` sh
-yarn format
-yarn lint
+npm run format
+npm run lint
 ```
 
 ## TODO
