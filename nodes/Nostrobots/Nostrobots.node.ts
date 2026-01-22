@@ -4,7 +4,7 @@ import {
 	INodeType,
 	INodeTypeDescription,
 	NodeOperationError,
-	IExecuteFunctions
+	IExecuteFunctions,
 } from 'n8n-workflow';
 import { hexToBytes } from '@noble/hashes/utils';
 import ws from 'ws';
