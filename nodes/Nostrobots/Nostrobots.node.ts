@@ -1,10 +1,10 @@
-import { IExecuteFunctions } from 'n8n-core';
 import {
 	assert,
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
 	NodeOperationError,
+	IExecuteFunctions
 } from 'n8n-workflow';
 import { hexToBytes } from '@noble/hashes/utils';
 import ws from 'ws';

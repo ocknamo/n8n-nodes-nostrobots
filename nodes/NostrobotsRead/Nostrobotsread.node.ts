@@ -1,9 +1,9 @@
-import { IExecuteFunctions } from 'n8n-core';
 import {
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
 	NodeOperationError,
+	IExecuteFunctions,
 } from 'n8n-workflow';
 import { Event, Filter, nip04, getPublicKey } from 'nostr-tools';
 import { hexToBytes } from '@noble/hashes/utils';
