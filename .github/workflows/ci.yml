@@ -22,6 +22,7 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
+        check-latest: true
         cache: 'npm'
     - run: npm ci
     - run: npm run build
@@ -43,6 +44,7 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
+        check-latest: true
         cache: 'npm'
     - run: npm ci
     - run: npm run ci:test
