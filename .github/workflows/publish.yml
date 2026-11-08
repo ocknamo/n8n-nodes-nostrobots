@@ -1,0 +1,36 @@
+name: Publish to npm
+
+# Publishes via npm trusted publishing (OIDC): no NPM_TOKEN secret is used and
+# provenance is attached automatically. Register this repository + publish.yml
+# (environment "npm") as the trusted publisher on npmjs.com before running.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          check-latest: true
+          registry-url: https://registry.npmjs.org
+      - name: Use npm 12
+        run: npm install -g npm@12.2.2
+
+      - run: npm ci
+      - run: npm run ci:test
+      - run: npm publish

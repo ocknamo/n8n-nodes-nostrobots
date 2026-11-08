@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.x, 22.x]
+        node-version: [22.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -24,6 +24,8 @@ jobs:
         node-version: ${{ matrix.node-version }}
         check-latest: true
         cache: 'npm'
+    - name: Use npm 12
+      run: npm install -g npm@12.2.2
     - run: npm ci
     - run: npm run build
     - run: npm run ci:format
@@ -35,7 +37,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.x, 22.x]
+        node-version: [22.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -46,5 +48,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
         check-latest: true
         cache: 'npm'
+    - name: Use npm 12
+      run: npm install -g npm@12.2.2
     - run: npm ci
     - run: npm run ci:test
